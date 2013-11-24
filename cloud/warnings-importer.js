@@ -7,6 +7,7 @@ var _ = require('underscore');
 var config = require('cloud/config.js');
 var floodWarningsJSONParser = require('cloud/warnings-json-parser.js').floodWarningsJSONParser;
 var landSlideWarningsJSONParser = require('cloud/warnings-json-parser.js').landSlideWarningsJSONParser;
+var avalancheWarningsJSONParser = require('cloud/avalanche-json-parser.js');
 
 function errorMessageFromErrorObject(error) {
     var errorMessage = "";
@@ -58,6 +59,30 @@ function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImp
     });
 }
 
+function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, avalancheImporter) {
+
+    var newRegions = avalancheImporter.regionSummariesJSONToRegions(regionSummaryJSON);
+
+    return avalancheImporter.createOrUpdateAvalancheRegions(newRegions).then(function (regions) {
+
+        var newWarnings = avalancheImporter.regionSummariesJSONToWarnings(regionSummaryJSON);
+        return avalancheImporter.createOrUpdateAvalancheRegions(newWarnings);
+
+    }).then(function (warnings) {
+
+        return Parse.Promise.as('AvalancheWarning  - import from region summary finished successfully');
+
+    }, function (error) {
+
+        var errorMessage = 'AvalancheWarning - import from regionn summary failed with error: ';
+        errorMessage += errorMessageFromErrorObject(error);
+
+        return Parse.Promise.error(errorMessage);
+
+    });
+
+}
+
 function importFloodWarnings() {
 
     return Parse.Cloud.httpRequest({
@@ -100,8 +125,23 @@ function importLandSlideWarnings() {
     });
 }
 
+function importAvalancheWarnings() {
+
+    return Parse.Cloud.httpRequest({
+        url: config.api.urlBase.avalanche + '/RegionSummary/Detail/1',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(function (httpResponse) {
+        return importAvalancheRegionsAndWarningsFromRegionJSON(httpResponse.data, avalancheWarningsJSONParser);
+    }, function (httpResponse) {
+        return Parse.Promise.error("Avalanche - could not import from county overview: " + httpResponse.status);
+    });
+}
+
 module.exports = {
     importFloodWarnings: importFloodWarnings,
     importFloodWarningsForAMunicipality: importFloodWarningsForAMunicipality,
-    importLandSlideWarnings: importLandSlideWarnings
+    importLandSlideWarnings: importLandSlideWarnings,
+    importAvalancheWarnings: importAvalancheWarnings
 };

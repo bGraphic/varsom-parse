@@ -6,7 +6,6 @@
 var _ = require('underscore');
 var municipalityImporter = require('cloud/municipality-importer.js');
 var warningsImporter = require('cloud/warnings-importer.js');
-var avalancheImporter = require('cloud/avalanche-importer.js');
 
 Parse.Cloud.job("importMunicipalities", function (request, status) {
     municipalityImporter.importMunicipalities().then(function (success) {
@@ -41,7 +40,7 @@ Parse.Cloud.job("importLandSlideWarnings", function (request, status) {
 });
 
 Parse.Cloud.job("importAvalancheWarnings", function (request, status) {
-    avalancheImporter.importAvalancheWarnings(status).then(function (success) {
+    warningsImporter.importAvalancheWarnings(status).then(function (success) {
         status.success(success);
     }, function (error) {
         status.error(error);
@@ -52,7 +51,7 @@ Parse.Cloud.job("importWarnings", function (request, status) {
     warningsImporter.importLandSlideWarnings().then(function (success) {
         return warningsImporter.importFloodWarnings();
     }).then(function (success) {
-        return avalancheImporter.importAvalancheWarnings();
+        return warningsImporter.importAvalancheWarnings();
     }).then(function (success) {
         status.success('Import of landslide, flood and avalanche warnings succeeded.');
     }, function (error) {
