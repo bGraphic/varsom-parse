@@ -24,7 +24,7 @@ function errorMessageFromErrorObject(error) {
 }
 
 function importWarningsFromCountyOverviewJSON(countyOverviewJSON, warningImporter) {
-
+    console.log(warningImporter.warningType + ' - started importting');
     var newWarnings = warningImporter.countyOverviewJSONToWarnings(countyOverviewJSON);
 
     return warningImporter.createOrUpdateWarnings(newWarnings).then(function (warnings) {
@@ -42,7 +42,7 @@ function importWarningsFromCountyOverviewJSON(countyOverviewJSON, warningImporte
 }
 
 function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImporter) {
-
+    console.log(warningImporter.warningType + ' - started importting');
     var newWarnings = warningImporter.municipalityWarningListJSONToWarnings(municipalityListJSON);
 
     return warningImporter.createOrUpdateWarnings(newWarnings).then(function (warnings) {
@@ -60,7 +60,7 @@ function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImp
 }
 
 function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, avalancheImporter) {
-
+    console.log('Avalanche - started importting');
     var newRegions = avalancheImporter.regionSummariesJSONToRegions(regionSummaryJSON);
 
     return avalancheImporter.createOrUpdateAvalancheRegions(newRegions).then(function (regions) {
@@ -105,6 +105,7 @@ function importFloodWarningsForAMunicipality(municipalityId) {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log('Flood httpResponse ' + httpResponse.status);
         return importWarningsFromMunicipalityListJSON(httpResponse.data, floodWarningsJSONParser);
     }, function (httpResponse) {
         return Parse.Promise.error("FloodWarning - could not import from municipality list: " + httpResponse.status);
@@ -119,6 +120,7 @@ function importLandSlideWarnings() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log('LandSlide httpResponse ' + httpResponse.status);
         return importWarningsFromCountyOverviewJSON(httpResponse.data, landSlideWarningsJSONParser);
     }, function (httpResponse) {
         return Parse.Promise.error("LandSlideWarning - could not import from county overview: " + httpResponse.status);
@@ -133,6 +135,7 @@ function importAvalancheWarnings() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log('Avalanche httpResponse ' + httpResponse.status);
         return importAvalancheRegionsAndWarningsFromRegionJSON(httpResponse.data, avalancheWarningsJSONParser);
     }, function (httpResponse) {
         return Parse.Promise.error("Avalanche - could not import from county overview: " + httpResponse.status);
