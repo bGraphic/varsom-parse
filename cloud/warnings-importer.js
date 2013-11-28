@@ -24,7 +24,7 @@ function errorMessageFromErrorObject(error) {
 }
 
 function importWarningsFromCountyOverviewJSON(countyOverviewJSON, warningImporter) {
-    console.log(warningImporter.warningType + ' - started importting');
+    console.log(warningImporter.warningType + ' - started importing');
     var newWarnings = warningImporter.countyOverviewJSONToWarnings(countyOverviewJSON);
 
     return warningImporter.createOrUpdateWarnings(newWarnings).then(function (warnings) {
@@ -42,7 +42,7 @@ function importWarningsFromCountyOverviewJSON(countyOverviewJSON, warningImporte
 }
 
 function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImporter) {
-    console.log(warningImporter.warningType + ' - started importting');
+    console.log(warningImporter.warningType + ' - started importing');
     var newWarnings = warningImporter.municipalityWarningListJSONToWarnings(municipalityListJSON);
 
     return warningImporter.createOrUpdateWarnings(newWarnings).then(function (warnings) {
@@ -60,7 +60,7 @@ function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImp
 }
 
 function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, avalancheImporter) {
-    console.log('Avalanche - started importting');
+    console.log('Avalanche - started importing');
     var newRegions = avalancheImporter.regionSummariesJSONToRegions(regionSummaryJSON);
 
     return avalancheImporter.createOrUpdateAvalancheRegions(newRegions).then(function (regions) {

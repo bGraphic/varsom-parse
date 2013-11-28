@@ -51,18 +51,18 @@ function addCountyObjectToMunicipality(municipality) {
     });
 }
 
-Parse.Cloud.afterSave("AvalancheWarning", function (request) {
-    addRegionObjectToWarning(request.object);
-});
-
-Parse.Cloud.afterSave("FloodWarning", function (request) {
-    addMunicipalityObjectToWarning(request.object);
-});
-
-Parse.Cloud.afterSave("LandSlideWarning", function (request) {
-    addMunicipalityObjectToWarning(request.object);
-});
-
-Parse.Cloud.afterSave("Municipality", function (request) {
-    addCountyObjectToMunicipality(request.object);
-});
+//Parse.Cloud.afterSave("AvalancheWarning", function (request) {
+//    addRegionObjectToWarning(request.object);
+//});
+//
+//Parse.Cloud.afterSave("FloodWarning", function (request) {
+//    addMunicipalityObjectToWarning(request.object);
+//});
+//
+//Parse.Cloud.afterSave("LandSlideWarning", function (request) {
+//    addMunicipalityObjectToWarning(request.object);
+//});
+//
+//Parse.Cloud.afterSave("Municipality", function (request) {
+//    addCountyObjectToMunicipality(request.object);
+//});
