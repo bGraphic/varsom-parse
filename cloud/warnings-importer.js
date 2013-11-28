@@ -66,7 +66,7 @@ function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, aval
     return avalancheImporter.createOrUpdateAvalancheRegions(newRegions).then(function (regions) {
 
         var newWarnings = avalancheImporter.regionSummariesJSONToWarnings(regionSummaryJSON);
-        return avalancheImporter.createOrUpdateAvalancheRegions(newWarnings);
+        return avalancheImporter.createOrUpdateAvalancheWarnings(newWarnings);
 
     }).then(function (warnings) {
 
