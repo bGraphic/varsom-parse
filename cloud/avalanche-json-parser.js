@@ -24,6 +24,7 @@ function isSameRegion(region, otherRegion) {
 function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
 
     avalancheWarning.set('regionId', avalancheWarningJSON.RegionId);
+
     avalancheWarning.set('validFrom', new Date(avalancheWarningJSON.ValidFrom + "+01:00"));
     avalancheWarning.set('validTo', new Date(avalancheWarningJSON.ValidTo + "+01:00"));
 
