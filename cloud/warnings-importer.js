@@ -92,7 +92,19 @@ function importFloodWarnings() {
         }
     }).then(function (httpResponse) {
         console.log('Flood httpResponse ' + httpResponse.status);
-        return importWarningsFromCountyOverviewJSON(httpResponse.data, floodWarningsJSONParser);
+
+        var data;
+
+        try {
+            data = httpResponse.data;
+        } catch (error) {
+            return Parse.Promise.error("FloodWarning - could not create data from httpResponse");
+        }
+
+        if (data) {
+            return importWarningsFromCountyOverviewJSON(httpResponse.data, floodWarningsJSONParser);
+        }
+
     }, function (httpResponse) {
         console.log('Flood httpResponse ' + httpResponse.status);
         return Parse.Promise.error("FloodWarning - could not import from county overview: " + httpResponse.status);
@@ -124,7 +136,19 @@ function importLandSlideWarnings() {
         }
     }).then(function (httpResponse) {
         console.log('LandSlide httpResponse ' + httpResponse.status);
-        return importWarningsFromCountyOverviewJSON(httpResponse.data, landSlideWarningsJSONParser);
+
+        var data;
+
+        try {
+            data = httpResponse.data;
+        } catch (error) {
+            return Parse.Promise.error("LandslideWarning - could not create data from httpResponse");
+        }
+
+        if (data) {
+            return importWarningsFromCountyOverviewJSON(httpResponse.data, landSlideWarningsJSONParser);
+        }
+
     }, function (httpResponse) {
         console.log('LandSlide httpResponse ' + httpResponse.status);
         return Parse.Promise.error("LandSlideWarning - could not import from county overview: " + httpResponse.status);

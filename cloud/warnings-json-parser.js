@@ -78,8 +78,6 @@ function WarningsJSONParser(warningType) {
             warnings.push(updateWarningWithJSON(warning, warningJSON));
         });
 
-        console.log(this.warningType + " - Municipality warning list JSON to warnings: " + warnings.length);
-
         return warnings;
     };
 
@@ -108,8 +106,6 @@ function WarningsJSONParser(warningType) {
             });
 
         });
-
-        console.log(this.warningType + " - County overview JSON to warnings: " + warnings.length);
 
         return warnings;
     };
