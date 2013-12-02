@@ -91,8 +91,10 @@ function importFloodWarnings() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log('Flood httpResponse ' + httpResponse.status);
         return importWarningsFromCountyOverviewJSON(httpResponse.data, floodWarningsJSONParser);
     }, function (httpResponse) {
+        console.log('Flood httpResponse ' + httpResponse.status);
         return Parse.Promise.error("FloodWarning - could not import from county overview: " + httpResponse.status);
     });
 }
