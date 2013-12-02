@@ -14,10 +14,10 @@ function errorMessageFromErrorObject(error) {
 
     if (error.code === Parse.Error.AGGREGATE_ERROR) {
         _.each(error.errors, function (error) {
-            errorMessage += "\n " + JSON.parse(error);
+            errorMessage = errorMessage + "\n " + JSON.parse(error);
         });
     } else {
-        errorMessage += "\n " + JSON.parse(error);
+        errorMessage = errorMessage + "\n " + JSON.parse(error);
     }
 
     return errorMessage;
@@ -34,8 +34,8 @@ function importWarningsFromCountyOverviewJSON(countyOverviewJSON, warningImporte
 
     }, function (error) {
 
-        var errorMessage = warningImporter.warningType + ' - import from county overview failed with error: ';
-        errorMessage += errorMessageFromErrorObject(error);
+        var errorMessage = warningImporter.warningType + ' - import from county overview failed with error: '
+                            + errorMessageFromErrorObject(error);
 
         console.log(errorMessage);
 
@@ -55,8 +55,8 @@ function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImp
 
     }, function (error) {
 
-        var errorMessage = warningImporter.warningType + ' - import from municipality list failed with error: ';
-        errorMessage += errorMessageFromErrorObject(error);
+        var errorMessage = warningImporter.warningType + ' - import from municipality list failed with error: '
+                            + errorMessageFromErrorObject(error);
 
         console.log(errorMessage);
 
@@ -82,8 +82,8 @@ function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, aval
 
     }, function (error) {
 
-        var errorMessage = 'AvalancheWarning - import from region summary failed with error: ';
-        errorMessage += errorMessageFromErrorObject(error);
+        var errorMessage = 'AvalancheWarning - import from region summary failed with error: '
+                            + errorMessageFromErrorObject(error);
 
         console.log(errorMessage);
 
