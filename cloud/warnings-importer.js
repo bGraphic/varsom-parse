@@ -14,27 +14,30 @@ function errorMessageFromErrorObject(error) {
 
     if (error.code === Parse.Error.AGGREGATE_ERROR) {
         _.each(error.errors, function (error) {
-            errorMessage += "\n " + JSON.parse(error);
+            errorMessage = errorMessage + "\n " + error.message;
         });
     } else {
-        errorMessage += "\n " + JSON.parse(error);
+        errorMessage = errorMessage + "\n " + error.message;
     }
 
     return errorMessage;
 }
 
 function importWarningsFromCountyOverviewJSON(countyOverviewJSON, warningImporter) {
-
+    console.log(warningImporter.warningType + ' - started importing');
     var newWarnings = warningImporter.countyOverviewJSONToWarnings(countyOverviewJSON);
+    console.log(warningImporter.warningType + ' - warnings parsed');
 
     return warningImporter.createOrUpdateWarnings(newWarnings).then(function (warnings) {
-
+        console.log(warningImporter.warningType + ' - warnings imported');
         return Parse.Promise.as(warningImporter.warningType + ' - import from county overview finished successfully');
 
     }, function (error) {
 
-        var errorMessage = warningImporter.warningType + ' - import from county overview failed with error: ';
-        errorMessage += errorMessageFromErrorObject(error);
+        var errorMessage = warningImporter.warningType + ' - import from county overview failed with error: '
+                            + errorMessageFromErrorObject(error);
+
+        console.log(errorMessage);
 
         return Parse.Promise.error(errorMessage);
 
@@ -42,17 +45,20 @@ function importWarningsFromCountyOverviewJSON(countyOverviewJSON, warningImporte
 }
 
 function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImporter) {
-
+    console.log(warningImporter.warningType + ' - started importing');
     var newWarnings = warningImporter.municipalityWarningListJSONToWarnings(municipalityListJSON);
+    console.log(warningImporter.warningType + ' - warnings parsed');
 
     return warningImporter.createOrUpdateWarnings(newWarnings).then(function (warnings) {
-
+        console.log(warningImporter.warningType + ' - warnings imported');
         return Parse.Promise.as(warningImporter.warningType + ' - import from municipality list finished successfully');
 
     }, function (error) {
 
-        var errorMessage = warningImporter.warningType + ' - import from municipality list failed with error: ';
-        errorMessage += errorMessageFromErrorObject(error);
+        var errorMessage = warningImporter.warningType + ' - import from municipality list failed with error: '
+                            + errorMessageFromErrorObject(error);
+
+        console.log(errorMessage);
 
         return Parse.Promise.error(errorMessage);
 
@@ -60,22 +66,26 @@ function importWarningsFromMunicipalityListJSON(municipalityListJSON, warningImp
 }
 
 function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, avalancheImporter) {
-
+    console.log('Avalanche - started importing');
     var newRegions = avalancheImporter.regionSummariesJSONToRegions(regionSummaryJSON);
+    console.log('Avalanche - regions parsed');
 
     return avalancheImporter.createOrUpdateAvalancheRegions(newRegions).then(function (regions) {
-
+        console.log('Avalanche - regions imported');
         var newWarnings = avalancheImporter.regionSummariesJSONToWarnings(regionSummaryJSON);
-        return avalancheImporter.createOrUpdateAvalancheRegions(newWarnings);
+        console.log('Avalanche - warnings parsed');
+        return avalancheImporter.createOrUpdateAvalancheWarnings(newWarnings);
 
     }).then(function (warnings) {
-
+        console.log('Avalanche - warnings imported');
         return Parse.Promise.as('AvalancheWarning  - import from region summary finished successfully');
 
     }, function (error) {
 
-        var errorMessage = 'AvalancheWarning - import from regionn summary failed with error: ';
-        errorMessage += errorMessageFromErrorObject(error);
+        var errorMessage = 'AvalancheWarning - import from region summary failed with error: '
+                            + errorMessageFromErrorObject(error);
+
+        console.log(errorMessage);
 
         return Parse.Promise.error(errorMessage);
 
@@ -86,13 +96,27 @@ function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, aval
 function importFloodWarnings() {
 
     return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.flood + '/CountyOverview/1',
+        url: config.api.urlBase.flood + '/CountySummary/1',
         headers: {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
-        return importWarningsFromCountyOverviewJSON(httpResponse.data, floodWarningsJSONParser);
+        console.log('Flood httpResponse ' + httpResponse.status);
+
+        var data;
+
+        try {
+            data = httpResponse.data;
+        } catch (error) {
+            return Parse.Promise.error("FloodWarning - could not create data from httpResponse");
+        }
+
+        if (data) {
+            return importWarningsFromCountyOverviewJSON(httpResponse.data, floodWarningsJSONParser);
+        }
+
     }, function (httpResponse) {
+        console.log('Flood httpResponse ' + httpResponse.status);
         return Parse.Promise.error("FloodWarning - could not import from county overview: " + httpResponse.status);
     });
 }
@@ -105,8 +129,10 @@ function importFloodWarningsForAMunicipality(municipalityId) {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log('Flood httpResponse ' + httpResponse.status);
         return importWarningsFromMunicipalityListJSON(httpResponse.data, floodWarningsJSONParser);
     }, function (httpResponse) {
+        console.log('Flood httpResponse ' + httpResponse.status);
         return Parse.Promise.error("FloodWarning - could not import from municipality list: " + httpResponse.status);
     });
 }
@@ -114,13 +140,27 @@ function importFloodWarningsForAMunicipality(municipalityId) {
 function importLandSlideWarnings() {
 
     return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.landSlide + '/CountyOverview/1',
+        url: config.api.urlBase.landSlide + '/CountySummary/1',
         headers: {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
-        return importWarningsFromCountyOverviewJSON(httpResponse.data, landSlideWarningsJSONParser);
+        console.log('LandSlide httpResponse ' + httpResponse.status);
+
+        var data;
+
+        try {
+            data = httpResponse.data;
+        } catch (error) {
+            return Parse.Promise.error("LandslideWarning - could not create data from httpResponse");
+        }
+
+        if (data) {
+            return importWarningsFromCountyOverviewJSON(httpResponse.data, landSlideWarningsJSONParser);
+        }
+
     }, function (httpResponse) {
+        console.log('LandSlide httpResponse ' + httpResponse.status);
         return Parse.Promise.error("LandSlideWarning - could not import from county overview: " + httpResponse.status);
     });
 }
@@ -133,8 +173,22 @@ function importAvalancheWarnings() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
-        return importAvalancheRegionsAndWarningsFromRegionJSON(httpResponse.data, avalancheWarningsJSONParser);
+        console.log('Avalanche httpResponse ' + httpResponse.status);
+
+        var data;
+
+        try {
+            data = httpResponse.data;
+        } catch (error) {
+            return Parse.Promise.error("Avalanche - could not create data from httpResponse");
+        }
+
+        if (data) {
+            return importAvalancheRegionsAndWarningsFromRegionJSON(httpResponse.data, avalancheWarningsJSONParser);
+        }
+
     }, function (httpResponse) {
+        console.log('Avalanche httpResponse ' + httpResponse.status);
         return Parse.Promise.error("Avalanche - could not import from county overview: " + httpResponse.status);
     });
 }

@@ -19,7 +19,6 @@ function updateWarningWithJSON(warning, warningJSON) {
 
 function updateWarningWithWarning(warning, newWarning) {
 
-    warning.set('countyId', newWarning.get('countyId'));
     warning.set('activityLevel', newWarning.get('activityLevel'));
     warning.set('mainText', newWarning.get('mainText'));
     warning.set('warningText', newWarning.get('warningText'));
@@ -76,8 +75,6 @@ function WarningsJSONParser(warningType) {
 
         _.each(municipalityWarningListJSON, function (warningJSON) {
             var warning = new Parse.Object(self.warningType);
-            warning.set('countyId', warningJSON.CountyList[0].Id);
-            warning.set('municipalityId', warningJSON.MunicipalityList[0].Id);
             warnings.push(updateWarningWithJSON(warning, warningJSON));
         });
 
