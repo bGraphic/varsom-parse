@@ -96,7 +96,7 @@ function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, aval
 function importFloodWarnings() {
 
     return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.flood + '/CountySummary/1',
+        url: config.api.urlBase.flood + '/CountyOverview/1',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -140,7 +140,7 @@ function importFloodWarningsForAMunicipality(municipalityId) {
 function importLandSlideWarnings() {
 
     return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.landSlide + '/CountySummary/1',
+        url: config.api.urlBase.landSlide + '/CountyOverview/1',
         headers: {
             'Content-Type': 'application/json'
         }
