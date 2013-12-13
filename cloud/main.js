@@ -63,6 +63,6 @@ Parse.Cloud.afterSave("LandSlideWarning", function (request) {
     addMunicipalityObjectToWarning(request.object);
 });
 
-Parse.Cloud.afterSave("Municipality", function (request) {
-    addCountyObjectToMunicipality(request.object);
-});
+//Parse.Cloud.afterSave("Municipality", function (request) {
+//    addCountyObjectToMunicipality(request.object);
+//});
