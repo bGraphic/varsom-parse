@@ -14,10 +14,10 @@ function errorMessageFromErrorObject(error) {
 
     if (error.code === Parse.Error.AGGREGATE_ERROR) {
         _.each(error.errors, function (error) {
-            errorMessage = errorMessage + "\n " + JSON.parse(error);
+            errorMessage = errorMessage + "\n " + error.message;
         });
     } else {
-        errorMessage = errorMessage + "\n " + JSON.parse(error);
+        errorMessage = errorMessage + "\n " + error.message;
     }
 
     return errorMessage;
@@ -96,7 +96,7 @@ function importAvalancheRegionsAndWarningsFromRegionJSON(regionSummaryJSON, aval
 function importFloodWarnings() {
 
     return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.flood + '/CountyOverview/1',
+        url: config.api.urlBase.flood + '/CountySummary/1',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -140,7 +140,7 @@ function importFloodWarningsForAMunicipality(municipalityId) {
 function importLandSlideWarnings() {
 
     return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.landSlide + '/CountyOverview/1',
+        url: config.api.urlBase.landSlide + '/CountySummary/1',
         headers: {
             'Content-Type': 'application/json'
         }
