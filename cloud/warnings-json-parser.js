@@ -32,27 +32,43 @@ function isSameWarning(warning, newWarning) {
             && warning.get('validTo').getTime() === newWarning.get('validTo').getTime();
 }
 
-function findWarningInWarnings(needleWarning, haystackWarnings) {
-    var warning = _.find(haystackWarnings, function (warning) { return isSameWarning(warning, needleWarning); });
-    return warning;
+function findWarningInForecast(warning, forecast) {
+    return _.find(forecast, function (forecastWarning) {
+        return isSameWarning(forecastWarning, warning);
+    });
 }
 
-function updateForcastWithWarnings(warnings, newWarnings) {
-    var forecast = [];
+function updateForcastWithWarnings(forecast, warnings) {
+    var updatedForecast = [];
 
-    _.each(newWarnings, function (newWarning) {
-        var warning = findWarningInWarnings(newWarning, warnings);
+    _.each(warnings, function (warning) {
+        var forecastWarning = findWarningInForecast(warning, forecast);
 
-        if (!warning) {
-            warning = newWarning;
+        if (!forecastWarning) {
+            forecastWarning = warning;
         } else {
-            warning = updateWarningWithWarning(warning, newWarning);
+            forecastWarning = updateWarningWithWarning(forecastWarning, warning);
         }
 
-        forecast.push(warning);
+        updatedForecast.push(forecastWarning);
     });
 
-    return forecast;
+    return updatedForecast;
+}
+
+function updateCountyForecastWithForecast(countyForecast, forecast) {
+
+    _.each(forecast, function (warning, i) {
+
+        if (i > countyForecast.length - 1) {
+            countyForecast.push(warning);
+        } else if (warning.get("activityLevel") > countyForecast[i].get("activityLevel")) {
+            countyForecast[i] = warning;
+        }
+
+    });
+
+    return countyForecast;
 }
 
 function WarningsJSONParser(warningType) {
@@ -81,6 +97,12 @@ function WarningsJSONParser(warningType) {
 
             promise = promise.then(function () {
 
+                var countyQuery = new Parse.Query("County");
+                countyQuery.equalTo("countyId", countyId);
+                return countyQuery.first();
+
+            }).then(function (county) {
+
                 var municipalityQuery = new Parse.Query("Municipality");
                 municipalityQuery.equalTo("countyId", countyId);
                 municipalityQuery.include(self.warningType + 'Forecast');
@@ -89,6 +111,7 @@ function WarningsJSONParser(warningType) {
                 return municipalityQuery.find().then(function (municipalities) {
 
                     var promises = [];
+                    var countyForecast = [];
 
                     _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
 
@@ -111,9 +134,14 @@ function WarningsJSONParser(warningType) {
                         var forecast = updateForcastWithWarnings(municipality.get(self.warningType + 'Forecast'), municipalityWarnings);
                         municipality.set(self.warningType + 'Forecast', forecast);
 
+                        countyForecast = updateCountyForecastWithForecast(countyForecast, forecast);
+
                         promises.push(municipality.save());
 
                     });
+
+                    county.set(self.warningType + 'Forecast', countyForecast);
+                    promises.push(county.save());
 
                     return Parse.Promise.when(promises);
                 });
