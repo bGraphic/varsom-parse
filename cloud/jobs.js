@@ -23,14 +23,6 @@ Parse.Cloud.job("importFloodWarnings", function (request, status) {
     });
 });
 
-Parse.Cloud.job("importFloodWarningsForAMunicipality", function (request, status) {
-    warningsImporter.importFloodWarningsForAMunicipality(request.body).then(function (success) {
-        status.success(JSON.stringify(success));
-    }, function (error) {
-        status.error(error);
-    });
-});
-
 Parse.Cloud.job("importLandSlideWarnings", function (request, status) {
     warningsImporter.importLandSlideWarnings().then(function (success) {
         status.success(JSON.stringify(success));

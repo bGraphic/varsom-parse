@@ -37,37 +37,27 @@ function findWarningInWarnings(needleWarning, haystackWarnings) {
     return warning;
 }
 
+function updateForcastWithWarnings(warnings, newWarnings) {
+    var forecast = [];
+
+    _.each(newWarnings, function (newWarning) {
+        var warning = findWarningInWarnings(newWarning, warnings);
+
+        if (!warning) {
+            warning = newWarning;
+        } else {
+            warning = updateWarningWithWarning(warning, newWarning);
+        }
+
+        forecast.push(warning);
+    });
+
+    return forecast;
+}
 
 function WarningsJSONParser(warningType) {
 
     this.warningType = warningType;
-
-    this.createOrUpdateWarnings = function (newWarnings) {
-        var warningQuery = new Parse.Query(this.warningType);
-        warningQuery.greaterThan("validTo", new Date());
-        warningQuery.limit(1000);
-
-        return warningQuery.find().then(function (warnings) {
-
-            var promises = [];
-
-            _.each(newWarnings, function (newWarning) {
-                var warning = findWarningInWarnings(newWarning, warnings);
-
-                if (!warning) {
-                    warning = newWarning;
-                } else {
-                    warning = updateWarningWithWarning(warning, newWarning);
-                }
-
-                promises.push(warning.save());
-
-            });
-
-            return Parse.Promise.when(promises);
-
-        });
-    };
 
     this.municipalityWarningListJSONToWarnings = function (municipalityWarningListJSON) {
         var warnings = [];
@@ -81,33 +71,58 @@ function WarningsJSONParser(warningType) {
         return warnings;
     };
 
-    this.countyOverviewJSONToWarnings = function (countyOverviewJSON) {
-        var warnings = [];
+    this.warningsJSONToWarnings = function (countyOverviewJSON) {
+
         var self = this;
+        var promise = Parse.Promise.as();
 
         _.each(countyOverviewJSON, function (countyJSON) {
             var countyId = countyJSON.Id;
 
-            _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
+            promise = promise.then(function () {
 
-                if (municipalityJSON.WarningList.length !== 3) {
-                    console.error("Municipality " + municipalityJSON.Id + " has " + municipalityJSON.WarningList.length + "warnings");
-                }
+                var municipalityQuery = new Parse.Query("Municipality");
+                municipalityQuery.equalTo("countyId", countyId);
+                municipalityQuery.include(self.warningType + 'Forecast');
+                municipalityQuery.limit(1000);
 
-                var municipalityWarnings = self.municipalityWarningListJSONToWarnings(municipalityJSON.WarningList);
-                var municipalityId = municipalityJSON.Id;
+                return municipalityQuery.find().then(function (municipalities) {
 
-                _.each(municipalityWarnings, function (municipalityWarning) {
-                    municipalityWarning.set('countyId', countyId);
-                    municipalityWarning.set('municipalityId', municipalityId);
+                    var promises = [];
+
+                    _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
+
+                        if (municipalityJSON.WarningList.length !== 3) {
+                            console.error("Municipality " + municipalityJSON.Id + " has " + municipalityJSON.WarningList.length + "warnings");
+                        }
+
+                        var municipalityWarnings = self.municipalityWarningListJSONToWarnings(municipalityJSON.WarningList);
+                        var municipalityId = municipalityJSON.Id;
+
+                        _.each(municipalityWarnings, function (municipalityWarning) {
+                            municipalityWarning.set('countyId', countyId);
+                            municipalityWarning.set('municipalityId', municipalityId);
+                        });
+
+                        var municipality = _.find(municipalities, function (municipality) {
+                            return municipality.get('municipalityId') === municipalityId;
+                        });
+
+                        var forecast = updateForcastWithWarnings(municipality.get(self.warningType + 'Forecast'), municipalityWarnings);
+                        municipality.set(self.warningType + 'Forecast', forecast);
+
+                        promises.push(municipality.save());
+
+                    });
+
+                    return Parse.Promise.when(promises);
                 });
 
-                warnings = warnings.concat(municipalityWarnings);
             });
 
         });
 
-        return warnings;
+        return promise;
     };
 }
 
