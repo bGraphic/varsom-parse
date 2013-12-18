@@ -32,42 +32,48 @@ function isSameWarning(warning, newWarning) {
             && warning.get('validTo').getTime() === newWarning.get('validTo').getTime();
 }
 
-function findWarningInWarnings(needleWarning, haystackWarnings) {
-    var warning = _.find(haystackWarnings, function (warning) { return isSameWarning(warning, needleWarning); });
-    return warning;
+function findWarningInForecast(warning, forecast) {
+    return _.find(forecast, function (forecastWarning) {
+        return isSameWarning(forecastWarning, warning);
+    });
 }
 
+function updateForcastWithWarnings(forecast, warnings) {
+    var updatedForecast = [];
+
+    _.each(warnings, function (warning) {
+        var forecastWarning = findWarningInForecast(warning, forecast);
+
+        if (!forecastWarning) {
+            forecastWarning = warning;
+        } else {
+            forecastWarning = updateWarningWithWarning(forecastWarning, warning);
+        }
+
+        updatedForecast.push(forecastWarning);
+    });
+
+    return updatedForecast;
+}
+
+function updateCountyForecastWithForecast(countyForecast, forecast) {
+
+    _.each(forecast, function (warning, i) {
+
+        if (i > countyForecast.length - 1) {
+            countyForecast.push(warning);
+        } else if (warning.get("activityLevel") > countyForecast[i].get("activityLevel")) {
+            countyForecast[i] = warning;
+        }
+
+    });
+
+    return countyForecast;
+}
 
 function WarningsJSONParser(warningType) {
 
     this.warningType = warningType;
-
-    this.createOrUpdateWarnings = function (newWarnings) {
-        var warningQuery = new Parse.Query(this.warningType);
-        warningQuery.greaterThan("validTo", new Date());
-        warningQuery.limit(1000);
-
-        return warningQuery.find().then(function (warnings) {
-
-            var promises = [];
-
-            _.each(newWarnings, function (newWarning) {
-                var warning = findWarningInWarnings(newWarning, warnings);
-
-                if (!warning) {
-                    warning = newWarning;
-                } else {
-                    warning = updateWarningWithWarning(warning, newWarning);
-                }
-
-                promises.push(warning.save());
-
-            });
-
-            return Parse.Promise.when(promises);
-
-        });
-    };
 
     this.municipalityWarningListJSONToWarnings = function (municipalityWarningListJSON) {
         var warnings = [];
@@ -81,33 +87,70 @@ function WarningsJSONParser(warningType) {
         return warnings;
     };
 
-    this.countyOverviewJSONToWarnings = function (countyOverviewJSON) {
-        var warnings = [];
+    this.warningsJSONToWarnings = function (countyOverviewJSON) {
+
         var self = this;
+        var promise = Parse.Promise.as();
 
         _.each(countyOverviewJSON, function (countyJSON) {
             var countyId = countyJSON.Id;
 
-            _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
+            promise = promise.then(function () {
 
-                if (municipalityJSON.WarningList.length !== 3) {
-                    console.error("Municipality " + municipalityJSON.Id + " has " + municipalityJSON.WarningList.length + "warnings");
-                }
+                var countyQuery = new Parse.Query("County");
+                countyQuery.equalTo("countyId", countyId);
+                return countyQuery.first();
 
-                var municipalityWarnings = self.municipalityWarningListJSONToWarnings(municipalityJSON.WarningList);
-                var municipalityId = municipalityJSON.Id;
+            }).then(function (county) {
 
-                _.each(municipalityWarnings, function (municipalityWarning) {
-                    municipalityWarning.set('countyId', countyId);
-                    municipalityWarning.set('municipalityId', municipalityId);
+                var municipalityQuery = new Parse.Query("Municipality");
+                municipalityQuery.equalTo("countyId", countyId);
+                municipalityQuery.include(self.warningType + 'Forecast');
+                municipalityQuery.limit(1000);
+
+                return municipalityQuery.find().then(function (municipalities) {
+
+                    var promises = [];
+                    var countyForecast = [];
+
+                    _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
+
+                        if (municipalityJSON.WarningList.length !== 3) {
+                            console.error("Municipality " + municipalityJSON.Id + " has " + municipalityJSON.WarningList.length + "warnings");
+                        }
+
+                        var municipalityWarnings = self.municipalityWarningListJSONToWarnings(municipalityJSON.WarningList);
+                        var municipalityId = municipalityJSON.Id;
+
+                        _.each(municipalityWarnings, function (municipalityWarning) {
+                            municipalityWarning.set('countyId', countyId);
+                            municipalityWarning.set('municipalityId', municipalityId);
+                        });
+
+                        var municipality = _.find(municipalities, function (municipality) {
+                            return municipality.get('municipalityId') === municipalityId;
+                        });
+
+                        var forecast = updateForcastWithWarnings(municipality.get(self.warningType + 'Forecast'), municipalityWarnings);
+                        municipality.set(self.warningType + 'Forecast', forecast);
+
+                        countyForecast = updateCountyForecastWithForecast(countyForecast, forecast);
+
+                        promises.push(municipality.save());
+
+                    });
+
+                    county.set(self.warningType + 'Forecast', countyForecast);
+                    promises.push(county.save());
+
+                    return Parse.Promise.when(promises);
                 });
 
-                warnings = warnings.concat(municipalityWarnings);
             });
 
         });
 
-        return warnings;
+        return promise;
     };
 }
 
