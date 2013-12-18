@@ -4,11 +4,22 @@
 'use strict';
 
 var _ = require('underscore');
+
 var municipalityImporter = require('cloud/municipality-importer.js');
+var countyImporter = require('cloud/county-importer.js');
+
 var warningsImporter = require('cloud/warnings-importer.js');
 
 Parse.Cloud.job("importMunicipalities", function (request, status) {
     municipalityImporter.importMunicipalities().then(function (success) {
+        status.success(success);
+    }, function (error) {
+        status.error(error);
+    });
+});
+
+Parse.Cloud.job("importCounties", function (request, status) {
+    countyImporter.importCounties().then(function (success) {
         status.success(success);
     }, function (error) {
         status.error(error);
