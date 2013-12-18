@@ -5,25 +5,7 @@
 
 var _ = require('underscore');
 
-function updateRegionWithJSON(avalancheRegion, avalancheRegionJSON) {
-    avalancheRegion.set('regionId', avalancheRegionJSON.Id);
-    avalancheRegion.set('name', avalancheRegionJSON.Name);
-
-    return avalancheRegion;
-}
-
-function updateRegionWithRegion(avalancheRegion, newAvalancheRegion) {
-    avalancheRegion.set('name', newAvalancheRegion.get('name'));
-    return avalancheRegion;
-}
-
-function isSameRegion(region, otherRegion) {
-    return region.get('regionId') === otherRegion.get('regionId');
-}
-
 function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
-
-    avalancheWarning.set('regionId', avalancheWarningJSON.RegionId);
 
     avalancheWarning.set('validFrom', new Date(avalancheWarningJSON.ValidFrom + "+01:00"));
     avalancheWarning.set('validTo', new Date(avalancheWarningJSON.ValidTo + "+01:00"));
@@ -35,93 +17,99 @@ function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
 }
 
 function updateWarningWithWarning(avalancheWarning, newAvalancheWarning) {
+
     avalancheWarning.set('dangerLevel', newAvalancheWarning.get('dangerLevel'));
     avalancheWarning.set('mainText', newAvalancheWarning.get('mainText'));
     return avalancheWarning;
 }
 
 function isSameWarning(avalancheWarning, otherAvalancheWarning) {
+
     return avalancheWarning.get('regionId') === otherAvalancheWarning.get('regionId')
             && avalancheWarning.get('validFrom').getTime() === otherAvalancheWarning.get('validFrom').getTime()
             && avalancheWarning.get('validTo').getTime() === otherAvalancheWarning.get('validTo').getTime();
 }
 
+function findWarningInForecast(warning, forecast) {
+    return _.find(forecast, function (forecastWarning) {
+        return isSameWarning(forecastWarning, warning);
+    });
+}
+
+function updateForcastWithWarnings(forecast, warnings) {
+    var updatedForecast = [];
+
+    _.each(warnings, function (warning) {
+        var forecastWarning = findWarningInForecast(warning, forecast);
+
+        if (!forecastWarning) {
+            forecastWarning = warning;
+        } else {
+            forecastWarning = updateWarningWithWarning(forecastWarning, warning);
+        }
+
+        updatedForecast.push(forecastWarning);
+    });
+
+    return updatedForecast;
+}
+
 function AvlancheJSONParser() {
 
-    this.regionSummariesJSONToRegions = function (avalancheRegionSummariesJSON) {
-        var regions = [];
-        _.each(avalancheRegionSummariesJSON, function (avalancheRegionSummaryJSON) {
-            var avalancheRegion = new Parse.Object('AvalancheRegion');
-            regions.push(updateRegionWithJSON(avalancheRegion, avalancheRegionSummaryJSON));
-        });
-        return regions;
-    };
+    this.warningType = "AvalancheWarning";
 
-    this.createOrUpdateAvalancheRegions = function (newAvalancheRegions) {
-        var regionQuery = new Parse.Query('AvalancheRegion');
-
-        return regionQuery.find().then(function (avalancheRegions) {
-
-            var promises = [];
-
-            _.each(newAvalancheRegions, function (newAvalancheRegion) {
-                var avalancheRegion = _.find(avalancheRegions, function (avalancheRegion) {
-                    return isSameRegion(avalancheRegion, newAvalancheRegion);
-                });
-
-                if (!avalancheRegion) {
-                    avalancheRegion = newAvalancheRegion;
-                } else {
-                    avalancheRegion = updateRegionWithRegion(avalancheRegion, newAvalancheRegion);
-                }
-
-                promises.push(avalancheRegion.save());
-
-            });
-
-            return Parse.Promise.when(promises);
-        });
-    };
-
-    this.regionSummariesJSONToWarnings = function (avalancheRegionSummariesJSON) {
+    this.regionWarningListJSONToWarnings = function (regionWarningListJSON) {
         var warnings = [];
-        _.each(avalancheRegionSummariesJSON, function (avalancheRegionSummaryJSON) {
-            _.each(avalancheRegionSummaryJSON.AvalancheWarningList, function (avalancheWarningJSON) {
-                var avalancheWarning = new Parse.Object('AvalancheWarning');
-                warnings.push(updateWarningWithJSON(avalancheWarning, avalancheWarningJSON));
-            });
+        var self = this;
+
+        _.each(regionWarningListJSON, function (avalancheWarningJSON) {
+            var avalancheWarning = new Parse.Object(self.warningType);
+            warnings.push(updateWarningWithJSON(avalancheWarning, avalancheWarningJSON));
         });
+
         return warnings;
     };
 
-    this.createOrUpdateAvalancheWarnings = function (newAvalancheWarnings) {
-        var warningQuery = new Parse.Query('AvalancheWarning');
-        warningQuery.greaterThan("validTo", new Date());
-        warningQuery.limit(1000);
+    this.warningsJSONToWarnings = function (regionSummariesJSON) {
 
-        return warningQuery.find().then(function (avalancheWarnings) {
+        var self = this;
+
+        var regionQuery = new Parse.Query("AvalancheRegion");
+        regionQuery.include(self.warningType + 'Forecast');
+
+        return regionQuery.find().then(function (regions) {
 
             var promises = [];
 
-            _.each(newAvalancheWarnings, function (newAvalancheWarning) {
-                var avalancheWarning = _.find(avalancheWarnings, function (avalancheWarning) {
-                    return isSameWarning(avalancheWarning, newAvalancheWarning);
+            _.each(regionSummariesJSON, function (regionSummaryJSON) {
+
+                var regionWarnings = self.regionWarningListJSONToWarnings(regionSummaryJSON.AvalancheWarningList);
+                var regionId = regionSummaryJSON.Id;
+
+                _.each(regionWarnings, function (regionWarning) {
+                    regionWarning.set('regionId', regionId);
                 });
 
-                if (!avalancheWarning) {
-                    avalancheWarning = newAvalancheWarning;
-                } else {
-                    avalancheWarning = updateWarningWithWarning(avalancheWarning, newAvalancheWarning);
+                if (regionSummaryJSON.AvalancheWarningList.length !== 3) {
+                    console.error("Region " + regionId + " has " + regionWarnings.length + "warnings");
                 }
 
-                promises.push(avalancheWarning.save());
+                var region = _.find(regions, function (region) {
+                    return region.get('regionId') === regionId;
+                });
+
+                var forecast = updateForcastWithWarnings(region.get(self.warningType + 'Forecast'), regionWarnings);
+                region.set(self.warningType + 'Forecast', forecast);
+
+                promises.push(region.save());
 
             });
 
             return Parse.Promise.when(promises);
-
         });
     };
 }
 
-module.exports = new AvlancheJSONParser();
+module.exports = {
+    avalancheWarningsJSONParser: new AvlancheJSONParser()
+};
