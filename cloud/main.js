@@ -10,4 +10,3 @@ Parse.Cloud.define("hello", function (request, response) {
 });
 
 require('cloud/jobs.js');
-require('cloud/county-jobs.js');
