@@ -21,13 +21,30 @@ var municipalityQuery = new Parse.Query('Municipality');
 municipalityQuery.limit(1000);
 municipalityQuery.find().then(function (municipalities) {
 
-    var promises = Parse.Promise.as();
-
     var municipalitiesJSON = require('../data/kommuner.json').features;
+
+    var multiPolygonCollection = {};
 
     _.each(municipalitiesJSON, function (municipalityJSON) {
 
         var municipalityId = municipalityJSON.properties.komm;
+        var countyPolygonCoordinates = municipalityJSON.geometry.coordinates;
+
+        if (!multiPolygonCollection[municipalityId]) {
+            multiPolygonCollection[municipalityId] = {};
+            multiPolygonCollection[municipalityId].type = "MultiPolygon";
+            multiPolygonCollection[municipalityId].coordinates  = [countyPolygonCoordinates];
+        } else {
+            multiPolygonCollection[municipalityId].coordinates.push(countyPolygonCoordinates);
+        }
+    });
+
+    console.log("# of geojson municipalities " + _.size(multiPolygonCollection));
+
+
+    var promises = Parse.Promise.as();
+
+    _.each(multiPolygonCollection, function (municipalityMultiPolygonJSON, municipalityId) {
 
         if (municipalityId < 1000) {
             municipalityId = "0" + municipalityId;
@@ -37,6 +54,8 @@ municipalityQuery.find().then(function (municipalities) {
             municipalityId = municipalityId.toString();
         }
 
+        console.log("Municipality: " + municipalityId + " | # of polygons: " + municipalityMultiPolygonJSON.coordinates.length);
+
         var municipality = _.find(municipalities, function (municipality) {
             return municipality.get('municipalityId') === municipalityId;
         });
@@ -44,7 +63,7 @@ municipalityQuery.find().then(function (municipalities) {
         if (!municipality) {
             console.log(municipalityId + " not found in parse");
         } else {
-            var base64 = new Buffer(JSON.stringify(municipalityJSON.geometry)).toString('base64');
+            var base64 = new Buffer(JSON.stringify(municipalityMultiPolygonJSON)).toString('base64');
             var coordinatesFile = new Parse.File(municipalityId + ".geojson", { base64: base64});
 
             promises = promises.then(function () {
