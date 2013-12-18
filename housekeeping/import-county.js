@@ -21,20 +21,37 @@ var countyQuery = new Parse.Query('County');
 countyQuery.limit(1000);
 countyQuery.find().then(function (counties) {
 
-    var promises = Parse.Promise.as();
-
     var countiesJSON = require('../data/fylker.json').features;
-    console.log(countiesJSON.length);
+
+    var multiPolygonCollection = {};
 
     _.each(countiesJSON, function (countyJSON) {
 
         var countyId = countyJSON.properties.fylkesnr;
+        var countyPolygonCoordinates = countyJSON.geometry.coordinates;
+
+        if (!multiPolygonCollection[countyId]) {
+            multiPolygonCollection[countyId] = {};
+            multiPolygonCollection[countyId].type = "MultiPolygon";
+            multiPolygonCollection[countyId].coordinates  = [countyPolygonCoordinates];
+        } else {
+            multiPolygonCollection[countyId].coordinates.push(countyPolygonCoordinates);
+        }
+    });
+
+    var promises = Parse.Promise.as();
+
+    console.log("# of geojson counties " + _.size(multiPolygonCollection));
+
+    _.each(multiPolygonCollection, function (countyMultiPolygonJSON, countyId) {
 
         if (countyId < 10) {
             countyId = "0" + countyId;
         } else {
             countyId = countyId.toString();
         }
+
+        console.log("County: " + countyId + " | # of polygons: " + countyMultiPolygonJSON.coordinates.length);
 
         var county = _.find(counties, function (county) {
             return county.get('countyId') === countyId;
@@ -43,7 +60,7 @@ countyQuery.find().then(function (counties) {
         if (!county) {
             console.log(countyId + " not found in parse");
         } else {
-            var base64 = new Buffer(JSON.stringify(countyJSON.geometry)).toString('base64');
+            var base64 = new Buffer(JSON.stringify(countyMultiPolygonJSON)).toString('base64');
             var coordinatesFile = new Parse.File(countyId + ".geojson", { base64: base64});
 
             promises = promises.then(function () {
