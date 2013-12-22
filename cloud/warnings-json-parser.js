@@ -110,7 +110,7 @@ function WarningsJSONParser(warningType) {
 
                 return municipalityQuery.find().then(function (municipalities) {
 
-                    var promises = [];
+                    var saveList = [];
                     var countyForecast = [];
 
                     _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
@@ -136,14 +136,20 @@ function WarningsJSONParser(warningType) {
 
                         countyForecast = updateCountyForecastWithForecast(countyForecast, forecast);
 
-                        promises.push(municipality.save());
+                        saveList.push(municipality);
 
                     });
 
                     county.set(self.warningType + 'Forecast', countyForecast);
-                    promises.push(county.save());
-
-                    return Parse.Promise.when(promises);
+                    return county.save().then(function () {
+                        Parse.Object.saveAll(saveList, function (list, error) {
+                            if (list) {
+                                return Parse.Promise.as();
+                            } else {
+                                return Parse.Promise.error(error);
+                            }
+                        });
+                    });
                 });
 
             });
