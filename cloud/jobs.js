@@ -18,8 +18,10 @@ function errorMessageFromErrorObject(error) {
         _.each(error.errors, function (error) {
             errorMessage = errorMessage + "\n " + error.message;
         });
-    } else {
+    } else if (error.message) {
         errorMessage = errorMessage + "\n " + error.message;
+    } else {
+        errorMessage = JSON.stringify(error);
     }
 
     return errorMessage;
