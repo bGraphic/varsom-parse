@@ -4,6 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
+var pushNotifier = require('cloud/push-notifier.js');
 
 function updateWarningWithJSON(warning, warningJSON) {
 
@@ -38,10 +39,10 @@ function findWarningInForecast(warning, forecast) {
     });
 }
 
-function updateForcastWithWarnings(forecast, warnings) {
+function updateForcastWithWarnings(forecast, newForecast) {
     var updatedForecast = [];
 
-    _.each(warnings, function (warning) {
+    _.each(newForecast, function (warning) {
         var forecastWarning = findWarningInForecast(warning, forecast);
 
         if (!forecastWarning) {
@@ -56,9 +57,9 @@ function updateForcastWithWarnings(forecast, warnings) {
     return updatedForecast;
 }
 
-function updateCountyForecastWithForecast(countyForecast, forecast) {
+function updateCountyForecastWithMunicipalityForecast(countyForecast, municipalityForecast) {
 
-    _.each(forecast, function (warning, i) {
+    _.each(municipalityForecast, function (warning, i) {
 
         if (i > countyForecast.length - 1) {
             countyForecast.push(warning);
@@ -111,7 +112,9 @@ function WarningsJSONParser(warningType) {
                 return municipalityQuery.find().then(function (municipalities) {
 
                     var saveList = [];
-                    var countyForecast = [];
+                    var promises = [];
+
+                    var newCountyForecast = [];
 
                     _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
 
@@ -131,25 +134,35 @@ function WarningsJSONParser(warningType) {
                             return municipality.get('municipalityId') === municipalityId;
                         });
 
-                        var forecast = updateForcastWithWarnings(municipality.get(self.warningType + 'Forecast'), municipalityWarnings);
-                        municipality.set(self.warningType + 'Forecast', forecast);
+                        var cachedMunicipalityForecast = JSON.parse(JSON.stringify(municipality.get(self.warningType + 'Forecast')));
 
-                        countyForecast = updateCountyForecastWithForecast(countyForecast, forecast);
+                        var municipalityForecast = municipality.get(self.warningType + 'Forecast');
+                        var newMunicipalityForecast = updateForcastWithWarnings(municipalityForecast, municipalityWarnings);
+
+                        municipality.set(self.warningType + 'Forecast', newMunicipalityForecast);
+
+                        newCountyForecast = updateCountyForecastWithMunicipalityForecast(newCountyForecast, newMunicipalityForecast);
 
                         saveList.push(municipality);
+                        promises.push(pushNotifier.pushUpdates(municipality, self.warningType,
+                                                               cachedMunicipalityForecast, newMunicipalityForecast));
 
                     });
 
-                    county.set(self.warningType + 'Forecast', countyForecast);
-                    return county.save().then(function () {
-                        Parse.Object.saveAll(saveList, function (list, error) {
-                            if (list) {
-                                return Parse.Promise.as();
-                            } else {
-                                return Parse.Promise.error(error);
-                            }
-                        });
+                    var cachedCountyForecast = JSON.parse(JSON.stringify(county.get(self.warningType + 'Forecast')));
+                    county.set(self.warningType + 'Forecast', newCountyForecast);
+
+                    promises.push(pushNotifier.pushUpdates(county, self.warningType, cachedCountyForecast, newCountyForecast));
+                    promises.push(county.save());
+
+                    Parse.Object.saveAll(saveList, function (list, error) {
+                        if (list) {
+                            return Parse.Promise.when(promises);
+                        } else {
+                            return Parse.Promise.error(error);
+                        }
                     });
+
                 });
 
             });
