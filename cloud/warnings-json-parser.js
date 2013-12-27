@@ -144,8 +144,9 @@ function WarningsJSONParser(warningType) {
                         newCountyForecast = updateCountyForecastWithMunicipalityForecast(newCountyForecast, newMunicipalityForecast);
 
                         saveList.push(municipality);
-                        promises.push(pushNotifier.pushUpdates(municipality, self.warningType,
-                                                               cachedMunicipalityForecast, newMunicipalityForecast));
+//                        Do not send push for municipalities at this point
+//                        promises.push(pushNotifier.pushUpdates(municipality, self.warningType,
+//                                                               cachedMunicipalityForecast, newMunicipalityForecast));
 
                     });
 

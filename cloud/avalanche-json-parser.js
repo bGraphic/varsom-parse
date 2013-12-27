@@ -103,7 +103,7 @@ function AvlancheJSONParser() {
                 var newForecast = updateForcastWithWarnings(region.get(self.warningType + 'Forecast'), regionWarnings);
                 region.set(self.warningType + 'Forecast', newForecast);
 
-                promises.push(pushNotifier.pushUpdates(region, self.warningType, oldForecast, forecast));
+                promises.push(pushNotifier.pushUpdates(region, self.warningType, cachedForecast, newForecast));
                 promises.push(region.save());
 
             });
