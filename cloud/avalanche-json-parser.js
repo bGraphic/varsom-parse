@@ -4,6 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
+var pushNotifier = require('cloud/push-notifier.js');
 
 function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
 
@@ -98,9 +99,11 @@ function AvlancheJSONParser() {
                     return region.get('regionId') === regionId;
                 });
 
-                var forecast = updateForcastWithWarnings(region.get(self.warningType + 'Forecast'), regionWarnings);
-                region.set(self.warningType + 'Forecast', forecast);
+                var cachedForecast = JSON.parse(JSON.stringify(region.get(self.warningType + 'Forecast')));
+                var newForecast = updateForcastWithWarnings(region.get(self.warningType + 'Forecast'), regionWarnings);
+                region.set(self.warningType + 'Forecast', newForecast);
 
+                promises.push(pushNotifier.pushUpdates(region, self.warningType, cachedForecast, newForecast));
                 promises.push(region.save());
 
             });
