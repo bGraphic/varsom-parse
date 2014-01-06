@@ -14,6 +14,10 @@ var warningsImporter = require('cloud/warnings-importer.js');
 function errorMessageFromErrorObject(error) {
     var errorMessage = "";
 
+    if (!error) {
+        return "No error message";
+    }
+
     if (error.code === Parse.Error.AGGREGATE_ERROR) {
         _.each(error.errors, function (error) {
             errorMessage = errorMessage + "\n " + error.message;

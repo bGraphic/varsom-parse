@@ -6,6 +6,22 @@
 var _ = require('underscore');
 var pushNotifier = require('cloud/push-notifier.js');
 
+function parseAvalancheProblems(avalancheProblemsJSON) {
+    var problems = [];
+
+    _.each(avalancheProblemsJSON, function (problemJSON) {
+
+        problems.push({
+            extId: problemJSON.AvalancheExtId,
+            probabilityId: problemJSON.AvalProbabilityId,
+            triggerId: problemJSON.AvalTriggerSimpleId
+        });
+
+    });
+
+    return problems;
+}
+
 function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
 
     avalancheWarning.set('validFrom', new Date(avalancheWarningJSON.ValidFrom + "+01:00"));
@@ -14,6 +30,9 @@ function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
     avalancheWarning.set('dangerLevel', avalancheWarningJSON.DangerLevel);
     avalancheWarning.set('mainText', avalancheWarningJSON.MainText);
 
+    avalancheWarning.set('avalancheWarning', avalancheWarningJSON.AvalancheWarning);
+    avalancheWarning.set('avalancheProblems', parseAvalancheProblems(avalancheWarningJSON.AvalancheProblems));
+
     return avalancheWarning;
 }
 
@@ -21,6 +40,10 @@ function updateWarningWithWarning(avalancheWarning, newAvalancheWarning) {
 
     avalancheWarning.set('dangerLevel', newAvalancheWarning.get('dangerLevel'));
     avalancheWarning.set('mainText', newAvalancheWarning.get('mainText'));
+
+    avalancheWarning.set('avalancheWarning', newAvalancheWarning.get('avalancheWarning'));
+    avalancheWarning.set('avalancheProblems', newAvalancheWarning.get('avalancheProblems'));
+
     return avalancheWarning;
 }
 

@@ -6,23 +6,53 @@
 var _ = require('underscore');
 var pushNotifier = require('cloud/push-notifier.js');
 
-function updateWarningWithJSON(warning, warningJSON) {
+function parseIdListJSONToArray(listJSON) {
+    var array = [];
+
+    _.each(listJSON, function (entryJSON) {
+        array.push(entryJSON.Id);
+    });
+
+    return array;
+}
+
+function updateWarningWithJSON(warning, warningJSON, warningType) {
 
     warning.set('validFrom', new Date(warningJSON.ValidFrom + "+01:00"));
     warning.set('validTo', new Date(warningJSON.ValidTo + "+01:00"));
 
     warning.set('activityLevel', warningJSON.ActivityLevel);
+
     warning.set('mainText', warningJSON.MainText);
     warning.set('warningText', warningJSON.WarningText);
+
+    warning.set('exposedHeightType', warningJSON.ExposedHeightType);
+    warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
+
+    warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
+
+    if (warningType === "LandSlideWarning") {
+        warning.set('landSlideTypeListJSON', parseIdListJSONToArray(warningJSON.LandSlideTypeList));
+    }
 
     return warning;
 }
 
-function updateWarningWithWarning(warning, newWarning) {
+function updateWarningWithWarning(warning, newWarning, warningType) {
 
     warning.set('activityLevel', newWarning.get('activityLevel'));
+
     warning.set('mainText', newWarning.get('mainText'));
     warning.set('warningText', newWarning.get('warningText'));
+
+    warning.set('exposedHeightType', newWarning.get('exposedHeightType'));
+    warning.set('exposedHeightValue', newWarning.get('exposedHeightValue'));
+
+    warning.set('causeListJSON', newWarning.get('causeListJSON'));
+
+    if (warningType === "LandSlideWarning") {
+        warning.set('landSlideTypeListJSON', newWarning.get('landSlideTypeListJSON'));
+    }
 
     return warning;
 }
@@ -39,7 +69,8 @@ function findWarningInForecast(warning, forecast) {
     });
 }
 
-function updateForcastWithWarnings(forecast, newForecast) {
+function updateForcastWithWarnings(forecast, newForecast, warningType) {
+
     var updatedForecast = [];
 
     _.each(newForecast, function (warning) {
@@ -48,7 +79,7 @@ function updateForcastWithWarnings(forecast, newForecast) {
         if (!forecastWarning) {
             forecastWarning = warning;
         } else {
-            forecastWarning = updateWarningWithWarning(forecastWarning, warning);
+            forecastWarning = updateWarningWithWarning(forecastWarning, warning, warningType);
         }
 
         updatedForecast.push(forecastWarning);
@@ -82,7 +113,7 @@ function WarningsJSONParser(warningType) {
 
         _.each(municipalityWarningListJSON, function (warningJSON) {
             var warning = new Parse.Object(self.warningType);
-            warnings.push(updateWarningWithJSON(warning, warningJSON));
+            warnings.push(updateWarningWithJSON(warning, warningJSON, self.warningType));
         });
 
         return warnings;
@@ -137,7 +168,7 @@ function WarningsJSONParser(warningType) {
                         var cachedMunicipalityForecast = JSON.parse(JSON.stringify(municipality.get(self.warningType + 'Forecast')));
 
                         var municipalityForecast = municipality.get(self.warningType + 'Forecast');
-                        var newMunicipalityForecast = updateForcastWithWarnings(municipalityForecast, municipalityWarnings);
+                        var newMunicipalityForecast = updateForcastWithWarnings(municipalityForecast, municipalityWarnings, self.warningType);
 
                         municipality.set(self.warningType + 'Forecast', newMunicipalityForecast);
 
@@ -154,6 +185,7 @@ function WarningsJSONParser(warningType) {
                     county.set(self.warningType + 'Forecast', newCountyForecast);
 
                     promises.push(pushNotifier.pushUpdates(county, self.warningType, cachedCountyForecast, newCountyForecast));
+
                     promises.push(county.save());
 
                     Parse.Object.saveAll(saveList, function (list, error) {
