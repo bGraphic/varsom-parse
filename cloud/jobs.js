@@ -18,12 +18,12 @@ function errorMessageFromErrorObject(error) {
         return "No error message";
     }
 
-    if (error.code === Parse.Error.AGGREGATE_ERROR) {
+    if (error.code === Parse.Error.AGGREGATE_ERROR || (error instanceof Array)) {
         _.each(error.errors, function (error) {
-            errorMessage = errorMessage + "\n " + error.message;
+            errorMessage = errorMessage + "\n " + error.code + ": " + error.message;
         });
     } else if (error.message) {
-        errorMessage = errorMessage + "\n " + error.message;
+        errorMessage = errorMessage + "\n " + error.code + ": " + error.message;
     } else {
         errorMessage = JSON.stringify(error);
     }
@@ -81,10 +81,13 @@ Parse.Cloud.job("importLandSlideWarnings", function (request, status) {
 
 Parse.Cloud.job("importWarnings", function (request, status) {
     warningsImporter.importLandSlideWarnings().then(function (success) {
+        console.log("Landslide warnings imported");
         return warningsImporter.importFloodWarnings();
     }).then(function () {
+        console.log("Flood warnings imported");
         return warningsImporter.importAvalancheWarnings();
     }).then(function () {
+        console.log("Avalanche warnings imported");
         status.success('Import succeeded.');
     }, function (error) {
         status.error('Import failed with error: ' + errorMessageFromErrorObject(error));
