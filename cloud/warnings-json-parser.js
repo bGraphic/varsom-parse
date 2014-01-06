@@ -16,6 +16,20 @@ function parseIdListJSONToArray(listJSON) {
     return array;
 }
 
+function saveAll(objects) {
+    var promise = new Parse.Promise();
+
+    Parse.Object.saveAll(objects, function (list, error) {
+        if (list) {
+            promise.resolve(list);
+        } else {
+            promise.reject(error);
+        }
+    });
+
+    return promise;
+}
+
 function updateWarningWithJSON(warning, warningJSON, warningType) {
 
     warning.set('validFrom', new Date(warningJSON.ValidFrom + "+01:00"));
@@ -188,13 +202,10 @@ function WarningsJSONParser(warningType) {
 
                     promises.push(county.save());
 
-                    Parse.Object.saveAll(saveList, function (list, error) {
-                        if (list) {
-                            return Parse.Promise.when(promises);
-                        } else {
-                            return Parse.Promise.error(error);
-                        }
+                    return saveAll(saveList).then(function (list) {
+                        return Parse.Promise.when(promises);
                     });
+
 
                 });
 
