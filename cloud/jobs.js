@@ -80,14 +80,7 @@ Parse.Cloud.job("importLandSlideWarnings", function (request, status) {
 });
 
 Parse.Cloud.job("importWarnings", function (request, status) {
-    warningsImporter.importLandSlideWarnings().then(function (success) {
-        console.log("Landslide warnings imported");
-        return warningsImporter.importFloodWarnings();
-    }).then(function () {
-        console.log("Flood warnings imported");
-        return warningsImporter.importAvalancheWarnings();
-    }).then(function () {
-        console.log("Avalanche warnings imported");
+    warningsImporter.importAllWarning().then(function (success) {
         status.success('Import succeeded.');
     }, function (error) {
         status.error('Import failed with error: ' + errorMessageFromErrorObject(error));

@@ -17,7 +17,11 @@ function importFloodWarnings() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log("Flood: json fetched");
         return floodWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+    }, function (error) {
+        console.error("Flood: import failed - " + JSON.stringify(error));
+        return Parse.Promise.as();
     });
 }
 
@@ -29,7 +33,11 @@ function importLandSlideWarnings() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log("Landslide: json fetched");
         return landSlideWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+    }, function (error) {
+        console.error("Landslide: import failed - " + JSON.stringify(error));
+        return Parse.Promise.as();
     });
 }
 
@@ -41,12 +49,27 @@ function importAvalancheWarnings() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
+        console.log("Avalanche: json fetched");
         return avalancheWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+    }, function (error) {
+        console.error("Avalanche: import failed - " + JSON.stringify(error));
+        return Parse.Promise.as();
+    });
+}
+
+function importAllWarnings() {
+    return Parse.Promise.as().then(function () {
+        return importAvalancheWarnings();
+    }).then(function () {
+        return importLandSlideWarnings();
+    }).then(function () {
+        return importFloodWarnings();
     });
 }
 
 module.exports = {
     importFloodWarnings: importFloodWarnings,
     importLandSlideWarnings: importLandSlideWarnings,
-    importAvalancheWarnings: importAvalancheWarnings
+    importAvalancheWarnings: importAvalancheWarnings,
+    importAllWarning: importAllWarnings
 };
