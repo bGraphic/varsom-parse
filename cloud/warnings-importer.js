@@ -19,9 +19,18 @@ function importFloodWarnings() {
     }).then(function (httpResponse) {
         console.log("Flood: json fetched");
         return floodWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+    }).then(function () {
+        console.log("Flood: json imported");
+        return Parse.Promise.as();
     }, function (error) {
         console.error("Flood: import failed - " + JSON.stringify(error));
-        return Parse.Promise.as();
+        if (error.code === 100) {
+            console.log("Flood: try again");
+            return importFloodWarnings();
+        } else {
+            console.log("Avalanche: do not try again");
+            return Parse.Promise.as();
+        }
     });
 }
 
@@ -35,9 +44,18 @@ function importLandSlideWarnings() {
     }).then(function (httpResponse) {
         console.log("Landslide: json fetched");
         return landSlideWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+    }).then(function () {
+        console.log("Landslide: json imported");
+        return Parse.Promise.as();
     }, function (error) {
         console.error("Landslide: import failed - " + JSON.stringify(error));
-        return Parse.Promise.as();
+        if (error.code === 100) {
+            console.log("Landslide: try again");
+            return importLandSlideWarnings();
+        } else {
+            console.log("Avalanche: do not try again");
+            return Parse.Promise.as();
+        }
     });
 }
 
@@ -51,9 +69,18 @@ function importAvalancheWarnings() {
     }).then(function (httpResponse) {
         console.log("Avalanche: json fetched");
         return avalancheWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+    }).then(function () {
+        console.log("Avalanche: json imported");
+        return Parse.Promise.as();
     }, function (error) {
         console.error("Avalanche: import failed - " + JSON.stringify(error));
-        return Parse.Promise.as();
+        if (error.code === 100) {
+            console.log("Avalanche: try again");
+            return importLandSlideWarnings();
+        } else {
+            console.log("Avalanche: do not try again");
+            return Parse.Promise.as();
+        }
     });
 }
 

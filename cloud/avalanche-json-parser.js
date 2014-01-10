@@ -131,7 +131,19 @@ function AvlancheJSONParser() {
 
             });
 
-            return Parse.Promise.when(promises);
+            return Parse.Promise.when(promises).then(function () {
+                console.log(self.warningType + ": json imported");
+                return Parse.Promise.as();
+            }, function (error) {
+                console.log(self.warningType + ": problem - " + JSON.stringify(error));
+                if (error.code === 100) {
+                    console.log(self.warningType + ": try again");
+                    return self.warningsJSONToWarnings(regionSummariesJSON);
+                } else {
+                    console.error(self.warningType + ": json imported failed");
+                    return Parse.Promise.as();
+                }
+            });
         });
     };
 }

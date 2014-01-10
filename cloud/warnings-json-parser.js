@@ -200,7 +200,7 @@ function WarningsJSONParser(warningType) {
 
                     promises.push(pushNotifier.pushUpdates(county, self.warningType, cachedCountyForecast, newCountyForecast));
 
-                    promises.push(county.save());
+                    saveList.push(county.save());
 
                     return saveAll(saveList).then(function (list) {
                         return Parse.Promise.when(promises);
@@ -211,6 +211,20 @@ function WarningsJSONParser(warningType) {
 
             });
 
+        });
+
+        promise = promise.then(function () {
+            console.log(self.warningType + ": json imported");
+            return Parse.Promise.as();
+        }, function (error) {
+            console.log(self.warningType + ": problem - " + JSON.stringify(error));
+            if (error.code === 100) {
+                console.log(self.warningType + ": try again");
+                return self.warningsJSONToWarnings(countyOverviewJSON);
+            } else {
+                console.error(self.warningType + ": json import failed");
+                return Parse.Promise.as();
+            }
         });
 
         return promise;
