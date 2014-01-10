@@ -122,7 +122,10 @@ function AvlancheJSONParser() {
                     return region.get('regionId') === regionId;
                 });
 
-                var cachedForecast = JSON.parse(JSON.stringify(region.get(self.warningType + 'Forecast')));
+                var cachedForecast = _.map(region.get(self.warningType + 'Forecast'), function (warning) {
+                    return warning.clone();
+                });
+
                 var newForecast = updateForcastWithWarnings(region.get(self.warningType + 'Forecast'), regionWarnings);
                 region.set(self.warningType + 'Forecast', newForecast);
 
