@@ -35,6 +35,7 @@ function updateWarningWithJSON(warning, warningJSON, warningType) {
     warning.set('validFrom', new Date(warningJSON.ValidFrom + "+01:00"));
     warning.set('validTo', new Date(warningJSON.ValidTo + "+01:00"));
 
+    warning.set('previousActivityLevel', '-1');
     warning.set('activityLevel', warningJSON.ActivityLevel);
 
     warning.set('mainText', warningJSON.MainText);
@@ -54,6 +55,7 @@ function updateWarningWithJSON(warning, warningJSON, warningType) {
 
 function updateWarningWithWarning(warning, newWarning, warningType) {
 
+    warning.set('previousActivityLevel', warning.get('activityLevel'));
     warning.set('activityLevel', newWarning.get('activityLevel'));
 
     warning.set('mainText', newWarning.get('mainText'));
@@ -192,10 +194,6 @@ function WarningsJSONParser(warningType) {
                         newCountyForecast = updateCountyForecastWithMunicipalityForecast(newCountyForecast, newMunicipalityForecast);
 
                         saveList.push(municipality);
-//                        Do not send push for municipalities at this point
-//                        promises.push(pushNotifier.pushUpdates(municipality, self.warningType,
-//                                                               cachedMunicipalityForecast, newMunicipalityForecast));
-
                     });
 
                     var cachedCountyForecast = _.map(county.get(self.warningType + 'Forecast'), function (warning) {
@@ -203,8 +201,6 @@ function WarningsJSONParser(warningType) {
                     });
 
                     county.set(self.warningType + 'Forecast', newCountyForecast);
-
-                    promises.push(pushNotifier.pushUpdates(county, self.warningType, cachedCountyForecast, newCountyForecast));
 
                     saveList.push(county.save());
 

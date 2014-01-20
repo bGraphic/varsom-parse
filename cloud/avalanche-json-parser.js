@@ -27,6 +27,7 @@ function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
     avalancheWarning.set('validFrom', new Date(avalancheWarningJSON.ValidFrom + "+01:00"));
     avalancheWarning.set('validTo', new Date(avalancheWarningJSON.ValidTo + "+01:00"));
 
+    avalancheWarning.set('previousDangerLevel', '-1');
     avalancheWarning.set('dangerLevel', avalancheWarningJSON.DangerLevel);
     avalancheWarning.set('mainText', avalancheWarningJSON.MainText);
 
@@ -38,6 +39,8 @@ function updateWarningWithJSON(avalancheWarning, avalancheWarningJSON) {
 
 function updateWarningWithWarning(avalancheWarning, newAvalancheWarning) {
 
+    avalancheWarning.set('previousDangerLevel', avalancheWarning.get("dangerLevel"));
+    
     avalancheWarning.set('dangerLevel', newAvalancheWarning.get('dangerLevel'));
     avalancheWarning.set('mainText', newAvalancheWarning.get('mainText'));
 
@@ -129,7 +132,6 @@ function AvlancheJSONParser() {
                 var newForecast = updateForcastWithWarnings(region.get(self.warningType + 'Forecast'), regionWarnings);
                 region.set(self.warningType + 'Forecast', newForecast);
 
-                promises.push(pushNotifier.pushUpdates(region, self.warningType, cachedForecast, newForecast));
                 promises.push(region.save());
 
             });

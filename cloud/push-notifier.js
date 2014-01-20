@@ -8,9 +8,10 @@ var _ = require('underscore'),
     SIGNIFICANT_CHANGE_THRESHOLD = 1;
 
 
-function isSameWarning(newWarning, oldWarning) {
-    return newWarning.get('validFrom').getTime() === oldWarning.get('validFrom').getTime() && newWarning.get('validTo').getTime() === oldWarning.get('validTo').getTime();
-}
+// This function may be needed in processWarningsModule
+//function isSameWarning(newWarning, oldWarning) {
+//    return newWarning.get('validFrom').getTime() === oldWarning.get('validFrom').getTime() && newWarning.get('validTo').getTime() === oldWarning.get('validTo').getTime();
+//}
 
 function findWarningLevel(warning) {
     return (warning.has('dangerLevel')) ? warning.get('dangerLevel')
@@ -18,98 +19,96 @@ function findWarningLevel(warning) {
             : -1;
 }
 
-function warningLevelHasChanged(newWarning, oldWarning) {
-    var oldLevel = findWarningLevel(oldWarning),
-        newLevel = findWarningLevel(newWarning);
+function findPreviousWarningLevel(warning) {
+    return (warning.has('previousDangerLevel')) ? warning.get('previousDangerLevel')
+        : (warning.has('previousActivityLevel')) ? warning.get('previousActivityLevel')
+            : -1;    
+}
 
+function warningLevelHasChanged(newLevel, oldLevel) {
     return oldLevel !== -1
         && newLevel !== -1
         && oldLevel !== newLevel;
 }
 
-function warningLevelHasChangedSignificantly(newWarning, oldWarning) {
-    var oldLevel = findWarningLevel(oldWarning),
-        newLevel = findWarningLevel(newWarning);
-
+function warningLevelHasChangedSignificantly(newLevel, oldLevel) {
     return oldLevel === SIGNIFICANT_CHANGE_OLD_LEVEL
         && newLevel > SIGNIFICANT_CHANGE_THRESHOLD;
 }
 
-function areaIDForArea(area) {
-    return area.has('regionId') ? area.get('regionId')
-        : area.has('countyId') ? area.get('countyId')
-            : area.has('municipalityId') ? area.get('municipalityId')
+function areaIDForWarning(warning) {
+    return warning.has('regionId') ? warning.get('regionId')
+        : warning.has('countyId') ? warning.get('countyId')
+            : warning.has('municipalityId') ? warning.get('municipalityId')
                 : -1;
 }
 
-function pushUpdates(area, warningType, oldForecast, newForecast) {
-    var promise = Parse.Promise.as(),
-        areaID = areaIDForArea(area);
+function avalancheRegionForId(regionId) {
+    var query = new Parse.Query("AvalancheRegion");
+    query.equalTo("regionId", regionId);
+    return query.first();
+}
 
-    promise = promise.then(function () {
+function countyRegionForId(countyId) {
+    var query = new Parse.Query("County");
+    query.equalTo("countyId", countyId);
+    return query.first();
+}
 
-        var combinedForecasts = _.map(newForecast, function (newWarning) {
-            var oldWarning;
-            oldWarning = _.find(oldForecast, function (warning) {
-                if (isSameWarning(newWarning, warning)) {
-                    return warning;
-                }
-            });
+// We need some logic to determine wether a warning is for a county or a municipality
+function areaForWarningTypeAndAreaId(warningType, areaId) {
+    if (warningType === 'AvalancheWarning') {
+        return avalancheRegionForId(areaId);
+    } else {
+        return countyRegionForId(areaId);
+    }   
+}
 
-            return { oldWarning: oldWarning, newWarning: newWarning };
+function pushQueryForAreaClassnameAndId(className, areaId) {
+    var query = new Parse.Query(Parse.Installation);
+    query.equalTo('deviceType', 'ios');
+    query.equalTo('channels', className + areaId);
+    return query;
+}
 
-        });
-
-        var changedWarning = _.find(combinedForecasts, function (combinedForecast, index) {
-            var oldWarning = combinedForecast.oldWarning,
-                newWarning = combinedForecast.newWarning;
-
-            if (oldWarning !== undefined && warningLevelHasChanged(newWarning, oldWarning)) {
-                if (index < 2 || (index === 2 && warningLevelHasChangedSignificantly(newWarning, oldWarning))) {
-                    return newWarning;
-                }
-            }
-        });
-
-        if (changedWarning !== undefined && areaID !== -1) {
-            var locArgs = [],
-                locArgsOldTemp = [],
-                locArgsNewTemp = [];
-
-            _.each(combinedForecasts, function (combinedForecast, index) {
-                var oldWarning = combinedForecast.oldWarning,
-                    newWarning = combinedForecast.newWarning;
-                locArgsOldTemp.push(findWarningLevel(oldWarning));
-                locArgsNewTemp.push(findWarningLevel(newWarning));
-            });
-
-            locArgs.push(area.get("name"));
-            locArgs = locArgs.concat(locArgsOldTemp).concat(locArgsNewTemp);
-
-            var pushQuery = new Parse.Query(Parse.Installation);
-            pushQuery.equalTo('deviceType', 'ios');
-            pushQuery.equalTo('channels', area.className + '-' + areaID);
-            return Parse.Push.send({
-                where: pushQuery,
-                data: {
-                    alert : {
-                        "loc-key": warningType + " forecast changed",
-                        "loc-args": locArgs
-                    },
-                    warningType: warningType,
-                    areaType: area.className,
-                    areaId: areaID
+function pushWarningUpdate(warningType, warning) {
+    var currentLevel = findWarningLevel(warning),
+        previousLevel = findPreviousWarningLevel(warning),
+        areaId = areaIDForWarning(warning),
+        forecastDay = warning.get("forecastDay");
+    
+    if (warningLevelHasChanged(currentLevel, previousLevel)) {
+        if (forecastDay < 2 
+            || (forecastDay === 2 
+                && warningLevelHasChangedSignificantly(currentLevel, previousLevel))) {
+            
+            areaForWarningTypeAndAreaId(warningType, areaId).then(function (area) {
+                if (area !== undefined) {
+                    return Parse.Push.send({
+                        where: pushQueryForAreaClassnameAndId(area.className, areaId),
+                        data: {
+                            alert: {
+                                "loc-key": warningType + " forecast changed",
+                                "loc-args": [
+                                    forecastDay, 
+                                    area.get("name"), 
+                                    previousLevel, 
+                                    currentLevel
+                                ]
+                            },
+                            warningType: warningType,
+                            areaType: area.className,
+                            areaId: areaId
+                        }
+                    }).then(function () {}, function (error) {
+                        console.error("Error pushing warning: " + JSON.stringify(error));
+                    });
                 }
             });
         }
-
-        return Parse.Promise.as();
-
-    });
-
-    return promise;
+    }
 }
 
 module.exports = {
-    pushUpdates: pushUpdates
+    pushWarningUpdate: pushWarningUpdate
 };
