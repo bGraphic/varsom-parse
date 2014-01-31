@@ -7,12 +7,6 @@ var _ = require('underscore'),
     SIGNIFICANT_CHANGE_OLD_LEVEL = 0,
     SIGNIFICANT_CHANGE_THRESHOLD = 1;
 
-
-// This function may be needed in processWarningsModule
-//function isSameWarning(newWarning, oldWarning) {
-//    return newWarning.get('validFrom').getTime() === oldWarning.get('validFrom').getTime() && newWarning.get('validTo').getTime() === oldWarning.get('validTo').getTime();
-//}
-
 function findWarningLevel(warning) {
     return (warning.has('dangerLevel')) ? warning.get('dangerLevel')
         : (warning.has('activityLevel')) ? warning.get('activityLevel')

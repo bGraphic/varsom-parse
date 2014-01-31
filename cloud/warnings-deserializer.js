@@ -5,6 +5,16 @@
 
 var _ = require('underscore');
 
+function saveAll(objects) {
+    var promise = new Parse.Promise();
+    
+    Parse.Object.saveAll(objects, function (list, error) {
+        list ? promise.resolve(list) : promise.reject(error);    
+    });
+    
+    return promise;
+}
+
 function parseIdListJSONToArray(listJSON) {
     return _.map(listJSON, function (entryJSON) {
         return entryJSON.ID;
@@ -65,8 +75,8 @@ function updateCountyForecastWithMunicipalityForecast(countyForecast, municipali
     return countyForecast;
 }
 
-function deserializeWarnings(countyOverViewJSON, processors, warningType) {
-    var promise = Parse.Promise.as();
+function deserializeWarnings(countyOverViewJSON, processors, saver, warningType) {
+    var promises = [];
     
     _.each(countyOverViewJSON, function (countyJSON) {
         var countyId = countyJSON.Id,
@@ -74,48 +84,50 @@ function deserializeWarnings(countyOverViewJSON, processors, warningType) {
     
         _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
             var municipalityId = municipalityJSON.Id,
-                municipalityWarnings = _.map(municipalityJSON.WarningList, function (warningJSON) {
-                    var warning = deserializeWarning(warningJSON, warningType);
-                    warning.set('countyId', countyId);
-                    warning.set('municipalityId', municipalityId);
-                    return warning;
-                });
+                municipalityWarnings = [];
+            
+            _.each(municipalityJSON.WarningList, function (warningJSON, index) {
+                var warning = deserializeWarning(warningJSON, warningType);
+                warning.set('countyId', countyId);
+                warning.set('municipalityId', municipalityId);
+                warning.set('forecastDay', index);
+                municipalityWarnings.push(warning);
+            });
             
             if (municipalityWarnings.length !== 3) {
                 console.error("Municipality " + municipalityJSON.Id + " has " 
                               + municipalityJSON.WarningList.length + "warnings");
             }
                     
-            promise = promise.then(function () {
-                return processors.municipalityProcessor({
-                    municipalityId: municipalityId,
-                    warnings: municipalityWarnings
-                });
-            });
+            promises.push(processors.municipalityProcessor({
+                municipalityId: municipalityId,
+                warnings: municipalityWarnings
+            }).then(saver));
 
             countyWarnings = updateCountyForecastWithMunicipalityForecast(countyWarnings, municipalityWarnings);
         });
         
-        promise = promise.then(function () {
-            return processors.countyProcessor({
-                countyId: countyId,
-                warnings: countyWarnings
-            });
-        });
+        promises.push(processors.countyProcessor({
+            countyId: countyId,
+            warnings: countyWarnings
+        }).then(saver));
     });
     
-    return promise; 
+    return Parse.Promise.when(promises);
 }
 
-function deserializeAvalancheWarnings(json, processor) {
-    var promise = Parse.Promise.as();
+function deserializeAvalancheWarnings(json, processor, saver) {
+    var promises = [];
     
     _.each(json, function (regionJSON) {
         var regionId = regionJSON.Id,
-            regionWarnings = _.map(regionJSON.AvalancheWarningList, function (warningJSON) {
+            regionWarnings = [];
+        
+            _.each(regionJSON.AvalancheWarningList, function (warningJSON, index) {
                 var warning = deserializeAvalancheWarning(warningJSON);
                 warning.set('regionId', regionId);
-                return warning;
+                warning.set('forecastDay', index);
+                regionWarnings.push(warning);
             });
         
         if (regionWarnings.length !== 3) {
@@ -123,23 +135,21 @@ function deserializeAvalancheWarnings(json, processor) {
                           + regionWarnings.length + "warnings");
         }
         
-        promise = promise.then(function () {
-            return processor({
-                regionId: regionId,
-                warnings: regionWarnings
-            });
-        });
+        promises.push(processor({
+            regionId: regionId,
+            warnings: regionWarnings
+        }).then(saver));
     });
     
-    return promise;
+    return Parse.Promise.when(promises);
 }
 
 module.exports = {
-    deserializeFloodWarnings: function (json, processors) {
-        return deserializeWarnings(json, processors, "FloodWarning");    
+    deserializeFloodWarnings: function (json, processors, saver) {
+        return deserializeWarnings(json, processors, saver, "FloodWarning");    
     },
-    deserializeLandSlideWarnings: function (json, processors) {
-        return deserializeWarnings(json, processors, "LandSlideWarning");
+    deserializeLandSlideWarnings: function (json, processors, saver) {
+        return deserializeWarnings(json, processors, saver, "LandSlideWarning");
     },
     deserializeAvalancheWarnings: deserializeAvalancheWarnings
 };

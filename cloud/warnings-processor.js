@@ -6,8 +6,11 @@
 var _ = require('underscore');
 
 function updateWarningWithWarning(warning, newWarning, warningType) {
+    
+    warning.set('forecastDay', newWarning.get('forecastDay'));
+    
     if (warningType === 'AvalancheWarning') {
-        warning.set('previousDangerLevel',  warning.get("dangerLevel"));
+        warning.set('previousDangerLevel',  warning.get('dangerLevel'));
         warning.set('dangerLevel',          newWarning.get('dangerLevel'));
         warning.set('mainText',             newWarning.get('mainText'));
         warning.set('avalancheWarning',     newWarning.get('avalancheWarning'));
@@ -65,7 +68,7 @@ function processWarningsForRegion(region, newWarnings, warningType) {
     return Parse.Promise.as().then(function () {
         var currentWarnings = region.get(warningType + 'Forecast');
         region.set(warningType + 'Forecast', updateForecastWithWarnings(currentWarnings, newWarnings, warningType));
-        return region.save();
+        return region;
     });
 }
 
