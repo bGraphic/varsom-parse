@@ -27,7 +27,7 @@ function importFloodWarnings() {
         }, function (region) {
             regions.push(region)
         }).then(function () {
-            saveAll(regions);
+            return saveAll(regions);
         });
     }).then(function () {
         console.log('Finished importing flood warnings');
@@ -53,7 +53,7 @@ function importLandSlideWarnings() {
         }, function (region) {
             regions.push(region);    
         }).then(function () {
-            saveAll(regions);    
+            return saveAll(regions);    
         });
     }).then(function () {
         console.log('Finished importing landslide warnings');
@@ -76,7 +76,7 @@ function importAvalancheWarnings() {
         return deserializer.deserializeAvalancheWarnings(json, processor.processAvalancheWarningsForRegion, function (region) {
             regions.push(region);
         }).then(function () {
-            saveAll(regions);
+            return saveAll(regions);
         });
     }).then(function () {
         console.log("Avalanche: json imported");
