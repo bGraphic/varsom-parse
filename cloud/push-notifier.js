@@ -108,6 +108,7 @@ function pushWarningUpdate(warningType, warning) {
         areaForWarning(warning).then(function (area) {
             if (area !== undefined) {
                 return Parse.Push.send({
+                    expiration_interval: 43200, //12 hours
                     where: pushQueryForAreaClassnameAndId(area.className, areaIDForWarning(warning)),
                     data: {
                         alert: {
