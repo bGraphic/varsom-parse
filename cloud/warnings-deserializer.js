@@ -66,10 +66,12 @@ function deserializeAvalancheWarning(avalancheWarningJSON) {
 
 function updateCountyForecastWithMunicipalityForecast(countyForecast, municipalityForecast) {
     _.each(municipalityForecast, function (warning, i) {
+        var countyWarning = warning.clone();
+        countyWarning.set("municipalityId", null);
         if (i > countyForecast.length - 1) {
-            countyForecast.push(warning.clone());
+            countyForecast.push(countyWarning);
         } else if (warning.get("activityLevel") > countyForecast[i].get("activityLevel")) {
-            countyForecast[i] = warning.clone();
+            countyForecast[i] = countyWarning;
         }
     });
     return countyForecast;

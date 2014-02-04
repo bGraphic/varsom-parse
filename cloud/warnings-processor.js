@@ -27,6 +27,8 @@ function updateWarningWithWarning(warning, newWarning, warningType) {
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
     } else {
         warning.set('previousActivityLevel',    warning.get('activityLevel'));
+        
+        warning.set('municipalityId',           newWarning.get('municipalityId'));
         warning.set('activityLevel',            newWarning.get('activityLevel'));
         warning.set('mainText',                 newWarning.get('mainText'));
         warning.set('warningText',              newWarning.get('warningText'));

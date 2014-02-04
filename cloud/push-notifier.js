@@ -32,8 +32,8 @@ function warningLevelHasChangedSignificantly(newLevel, oldLevel) {
 
 function areaIDForWarning(warning) {
     return warning.has('regionId') ? warning.get('regionId')
-        : warning.has('countyId') ? warning.get('countyId')
-            : warning.has('municipalityId') ? warning.get('municipalityId')
+        : warning.has('municipalityId') ? warning.get('municipalityId')
+            : warning.has('countyId') ? warning.get('countyId')
                 : -1;
 }
 
@@ -49,26 +49,33 @@ function countyRegionForId(countyId) {
     return query.first();
 }
 
+function municipalityRegionForId(municipalityId) {
+    var query = new Parse.Query("Municipality");
+    query.equalTo("municipalityId", municipalityId);
+    return query.first();
+}
+
 // We need some logic to determine wether a warning is for a county or a municipality
-function areaForWarningTypeAndAreaId(warningType, areaId) {
-    if (warningType === 'AvalancheWarning') {
-        return avalancheRegionForId(areaId);
-    } else {
-        return countyRegionForId(areaId);
-    }   
+function areaForWarning(warning) {
+    if (warning.has('regionId')) {
+        return avalancheRegionForId(warning.get('regionId'));
+    } else if (warning.has('municipalityId')) {
+        return municipalityRegionForId(warning.get('municipalityId'));
+    } else if (warning.has('countyId')) {
+        return countyRegionForId(warning.get('countyId'));
+    }
 }
 
 function pushQueryForAreaClassnameAndId(className, areaId) {
     var query = new Parse.Query(Parse.Installation);
     query.equalTo('deviceType', 'ios');
-    query.equalTo('channels', className + areaId);
+    query.equalTo('channels', className + "-" + areaId);
     return query;
 }
 
 function pushWarningUpdate(warningType, warning) {
     var currentLevel = findWarningLevel(warning),
         previousLevel = findPreviousWarningLevel(warning),
-        areaId = areaIDForWarning(warning),
         forecastDay = warning.get("forecastDay");
     
     if (warningLevelHasChanged(currentLevel, previousLevel)) {
@@ -76,10 +83,10 @@ function pushWarningUpdate(warningType, warning) {
             || (forecastDay === 2 
                 && warningLevelHasChangedSignificantly(currentLevel, previousLevel))) {
             
-            areaForWarningTypeAndAreaId(warningType, areaId).then(function (area) {
+            areaForWarning(warning).then(function (area) {
                 if (area !== undefined) {
                     return Parse.Push.send({
-                        where: pushQueryForAreaClassnameAndId(area.className, areaId),
+                        where: pushQueryForAreaClassnameAndId(area.className, areaIDForWarning(warning)),
                         data: {
                             alert: {
                                 "loc-key": warningType + " forecast changed",
@@ -92,7 +99,7 @@ function pushWarningUpdate(warningType, warning) {
                             },
                             warningType: warningType,
                             areaType: area.className,
-                            areaId: areaId
+                            areaId: areaIDForWarning(warning)
                         }
                     }).then(function () {}, function (error) {
                         console.error("Error pushing warning: " + JSON.stringify(error));
