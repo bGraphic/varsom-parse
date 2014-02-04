@@ -9,7 +9,6 @@ function saveAll(objects) {
     var promise = new Parse.Promise();
     
     Parse.Object.saveAll(objects, function (list, error) {
-        console.error("Save all objects: " + objects.length);
         list ? promise.resolve(list) : promise.reject(error);    
     });
     

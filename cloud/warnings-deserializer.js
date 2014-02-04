@@ -75,7 +75,7 @@ function updateCountyForecastWithMunicipalityForecast(countyForecast, municipali
     return countyForecast;
 }
 
-function deserializeWarnings(countyOverViewJSON, processors, saver, warningType) {
+function deserializeWarnings(countyOverViewJSON, processors, warningType) {
     var promises = [];
     
     _.each(countyOverViewJSON, function (countyJSON) {
@@ -118,7 +118,7 @@ function deserializeWarnings(countyOverViewJSON, processors, saver, warningType)
     return Parse.Promise.when(promises);
 }
 
-function deserializeAvalancheWarnings(json, processor, saver) {
+function deserializeAvalancheWarnings(json, processor) {
     var promises = [];
     
     _.each(json, function (regionJSON) {
@@ -140,18 +140,18 @@ function deserializeAvalancheWarnings(json, processor, saver) {
         promises.push(processor({
             regionId: regionId,
             warnings: regionWarnings
-        }).then(saver));
+        }));
     });
     
     return Parse.Promise.when(promises);
 }
 
 module.exports = {
-    deserializeFloodWarnings: function (json, processors, saver) {
-        return deserializeWarnings(json, processors, saver, "FloodWarning");    
+    deserializeFloodWarnings: function (json, processors) {
+        return deserializeWarnings(json, processors, "FloodWarning");    
     },
-    deserializeLandSlideWarnings: function (json, processors, saver) {
-        return deserializeWarnings(json, processors, saver, "LandSlideWarning");
+    deserializeLandSlideWarnings: function (json, processors) {
+        return deserializeWarnings(json, processors, "LandSlideWarning");
     },
     deserializeAvalancheWarnings: deserializeAvalancheWarnings
 };
