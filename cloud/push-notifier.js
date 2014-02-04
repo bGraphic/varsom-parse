@@ -58,11 +58,28 @@ function municipalityRegionForId(municipalityId) {
     return query.first();
 }
 
-function forecastDayAsString(forecastDay) {
-    return forecastDay === 2 ? moment().add('d', forecastDay).format("dddd") : forecastDay;
+function forecastDaysFromNow(warning) {
+    var validToMoment = moment(warning.get("validTo"));
+    var nowMoment = moment();
+    
+    return validToMoment.diff(nowMoment, 'days');
 }
 
-// We need some logic to determine wether a warning is for a county or a municipality
+function forecastDayAsString(warning) {
+    var validToMoment = moment(warning.get("validTo"));
+    var nowMoment = moment();
+    
+    switch(forecastDaysFromNow(warning))
+    {
+        case 0:
+          return "Today";
+        case 1:
+          return "Tomorrow";
+        default:
+          return validToMoment.add('h', 1).format("dddd");
+    }
+}
+
 function areaForWarning(warning) {
     if (warning.has('regionId')) {
         return avalancheRegionForId(warning.get('regionId'));
@@ -83,10 +100,10 @@ function pushQueryForAreaClassnameAndId(className, areaId) {
 function pushWarningUpdate(warningType, warning) {
     var currentLevel = findWarningLevel(warning),
         previousLevel = findPreviousWarningLevel(warning),
-        forecastDay = warning.get("forecastDay");
+        forecastDays = forecastDaysFromNow(warning);
     
-    if ((forecastDay === 2 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
-            || (forecastDay !== 2 && warningLevelHasChanged(currentLevel, previousLevel))) {     
+    if ((forecastDays === 2 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
+            || (forecastDays !== 2 && warningLevelHasChanged(currentLevel, previousLevel))) {     
             
         areaForWarning(warning).then(function (area) {
             if (area !== undefined) {
@@ -94,7 +111,7 @@ function pushWarningUpdate(warningType, warning) {
                     where: pushQueryForAreaClassnameAndId(area.className, areaIDForWarning(warning)),
                     data: {
                         alert: {
-                            "loc-key": warningType + " forecast changed " + forecastDayAsString(forecastDay),
+                            "loc-key": warningType + " forecast changed " + forecastDayAsString(warning),
                             "loc-args": [
                                 area.get("name"),
                                 previousLevel,
