@@ -4,8 +4,7 @@
 'use strict';
 
 var _ = require('underscore'),
-    SIGNIFICANT_CHANGE_OLD_LEVEL = 0,
-    SIGNIFICANT_CHANGE_THRESHOLD = 1;
+    moment = require('moment');
 
 function findWarningLevel(warning) {
     return (warning.has('dangerLevel')) ? warning.get('dangerLevel')
@@ -20,14 +19,18 @@ function findPreviousWarningLevel(warning) {
 }
 
 function warningLevelHasChanged(newLevel, oldLevel) {
-    return oldLevel !== -1
-        && newLevel !== -1
+    return oldLevel !== "-1"
+        && newLevel !== "-1"
         && oldLevel !== newLevel;
 }
 
-function warningLevelHasChangedSignificantly(newLevel, oldLevel) {
-    return oldLevel === SIGNIFICANT_CHANGE_OLD_LEVEL
-        && newLevel > SIGNIFICANT_CHANGE_THRESHOLD;
+function dayThreeLevelHasChanged(newLevel, oldLevel) {
+
+    if(oldLevel === "0")
+        return newLevel !== "1" 
+            && newLevel !== "0";
+    else
+        return warningLevelHasChanged(newLevel, oldLevel);
 }
 
 function areaIDForWarning(warning) {
@@ -78,35 +81,31 @@ function pushWarningUpdate(warningType, warning) {
         previousLevel = findPreviousWarningLevel(warning),
         forecastDay = warning.get("forecastDay");
     
-    if (warningLevelHasChanged(currentLevel, previousLevel)) {
-        if (forecastDay < 2 
-            || (forecastDay === 2 
-                && warningLevelHasChangedSignificantly(currentLevel, previousLevel))) {
+    if ((forecastDay === 2 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
+            || (forecastDay !== 2 && warningLevelHasChanged(currentLevel, previousLevel))) {     
             
-            areaForWarning(warning).then(function (area) {
-                if (area !== undefined) {
-                    return Parse.Push.send({
-                        where: pushQueryForAreaClassnameAndId(area.className, areaIDForWarning(warning)),
-                        data: {
-                            alert: {
-                                "loc-key": warningType + " forecast changed",
-                                "loc-args": [
-                                    forecastDay, 
-                                    area.get("name"), 
-                                    previousLevel, 
-                                    currentLevel
-                                ]
-                            },
-                            warningType: warningType,
-                            areaType: area.className,
-                            areaId: areaIDForWarning(warning)
-                        }
-                    }).then(function () {}, function (error) {
-                        console.error("Error pushing warning: " + JSON.stringify(error));
-                    });
-                }
-            });
-        }
+        areaForWarning(warning).then(function (area) {
+            if (area !== undefined) {
+                return Parse.Push.send({
+                    where: pushQueryForAreaClassnameAndId(area.className, areaIDForWarning(warning)),
+                    data: {
+                        alert: {
+                            "loc-key": warningType + " forecast changed " + moment().add('d', forecastDay).format("dddd"),
+                            "loc-args": [
+                                area.get("name"), 
+                                previousLevel, 
+                                currentLevel
+                            ]
+                        },
+                        warningType: warningType,
+                        areaType: area.className,
+                        areaId: areaIDForWarning(warning)
+                    }
+                }).then(function () {}, function (error) {
+                    console.error("Error pushing warning: " + JSON.stringify(error));
+                });
+            }
+        });
     }
 }
 
