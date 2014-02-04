@@ -58,6 +58,10 @@ function municipalityRegionForId(municipalityId) {
     return query.first();
 }
 
+function forecastDayAsString(forecastDay) {
+    return forecastDay === 2 ? moment().add('d', forecastDay).format("dddd") : forecastDay;
+}
+
 // We need some logic to determine wether a warning is for a county or a municipality
 function areaForWarning(warning) {
     if (warning.has('regionId')) {
@@ -90,11 +94,11 @@ function pushWarningUpdate(warningType, warning) {
                     where: pushQueryForAreaClassnameAndId(area.className, areaIDForWarning(warning)),
                     data: {
                         alert: {
-                            "loc-key": warningType + " forecast changed " + moment().add('d', forecastDay).format("dddd"),
+                            "loc-key": warningType + " forecast changed " + forecastDayAsString(forecastDay),
                             "loc-args": [
-                                area.get("name"), 
-                                previousLevel, 
-                                currentLevel
+                                area.get("name"),
+                                previousLevel,
+                                currentLevel 
                             ]
                         },
                         warningType: warningType,
