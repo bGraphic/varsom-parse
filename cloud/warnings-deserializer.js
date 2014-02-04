@@ -80,37 +80,39 @@ function deserializeWarnings(countyOverViewJSON, processors, saver, warningType)
     
     _.each(countyOverViewJSON, function (countyJSON) {
         var countyId = countyJSON.Id,
-            countyWarnings = [];
+            countyForecast = [],
+            municipalityForecasts = {};
     
         _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
             var municipalityId = municipalityJSON.Id,
-                municipalityWarnings = [];
+                municipalityForecast = [];
             
             _.each(municipalityJSON.WarningList, function (warningJSON, index) {
                 var warning = deserializeWarning(warningJSON, warningType);
                 warning.set('countyId', countyId);
                 warning.set('municipalityId', municipalityId);
                 warning.set('forecastDay', index);
-                municipalityWarnings.push(warning);
+                municipalityForecast.push(warning);
             });
             
-            if (municipalityWarnings.length !== 3) {
+            if (municipalityForecast.length !== 3) {
                 console.error("Municipality " + municipalityJSON.Id + " has " 
                               + municipalityJSON.WarningList.length + "warnings");
             }
-                    
-            promises.push(processors.municipalityProcessor({
-                municipalityId: municipalityId,
-                warnings: municipalityWarnings
-            }).then(saver));
-
-            countyWarnings = updateCountyForecastWithMunicipalityForecast(countyWarnings, municipalityWarnings);
+            
+            municipalityForecasts[municipalityId] = municipalityForecast;
+            countyForecast = updateCountyForecastWithMunicipalityForecast(countyForecast, municipalityForecast);
         });
+        
+        promises.push(processors.municipalityProcessor({
+            countyId: countyId,
+            warnings: municipalityForecasts
+        }));
         
         promises.push(processors.countyProcessor({
             countyId: countyId,
-            warnings: countyWarnings
-        }).then(saver));
+            warnings: countyForecast
+        }));
     });
     
     return Parse.Promise.when(promises);

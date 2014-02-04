@@ -7,27 +7,12 @@ var apiHandler = require('cloud/nve-warnings-api-handler.js'),
     deserializer = require('cloud/warnings-deserializer.js'),
     processor = require('cloud/warnings-processor.js');
 
-function saveAll(objects) {
-    var promise = new Parse.Promise();
-    
-    Parse.Object.saveAll(objects, function (list, error) {
-        list ? promise.resolve(list) : promise.reject(error);    
-    });
-    
-    return promise;
-}
-
 function importFloodWarnings() {
     return apiHandler.fetchFloodWarnings().then(function (json) {
         console.log("Flood: json fetched");
-        var regions = [];
         return deserializer.deserializeFloodWarnings(json, {
             countyProcessor: processor.processFloodWarningsForCounty,
             municipalityProcessor: processor.processFloodWarningsForMunicipality
-        }, function (region) {
-            regions.push(region)
-        }).then(function () {
-            return saveAll(regions);
         });
     }).then(function () {
         console.log('Finished importing flood warnings');
@@ -46,14 +31,9 @@ function importFloodWarnings() {
 function importLandSlideWarnings() {
     return apiHandler.fetchLandSlideWarnings().then(function (json) {
         console.log("Landslide: json fetched");
-        var regions = [];
         return deserializer.deserializeLandSlideWarnings(json, {
             countyProcessor: processor.processLandSlideWarningsForCounty,
             municipalityProcessor: processor.processLandSlideWarningsForMunicipality
-        }, function (region) {
-            regions.push(region);    
-        }).then(function () {
-            return saveAll(regions);    
         });
     }).then(function () {
         console.log('Finished importing landslide warnings');
@@ -72,12 +52,9 @@ function importLandSlideWarnings() {
 function importAvalancheWarnings() {
     return apiHandler.fetchAvalancheWarnings().then(function (json) {
         console.log("Avalanche: json fetched");
-        var regions = [];
-        return deserializer.deserializeAvalancheWarnings(json, processor.processAvalancheWarningsForRegion, function (region) {
-            regions.push(region);
-        }).then(function () {
-            return saveAll(regions);
-        });
+        return deserializer.deserializeAvalancheWarnings(json, 
+            processor.processAvalancheWarningsForRegion
+        );
     }).then(function () {
         console.log("Avalanche: json imported");
     }, function (error) {
