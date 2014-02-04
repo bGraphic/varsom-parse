@@ -4,9 +4,7 @@
 'use strict';
 
 var _ = require('underscore'),
-    SIGNIFICANT_CHANGE_OLD_LEVEL = 0,
-    SIGNIFICANT_CHANGE_THRESHOLD = 1;
-
+    moment = require('moment');
 
 function findWarningLevel(warning) {
     return (warning.has('dangerLevel')) ? warning.get('dangerLevel')
@@ -14,91 +12,124 @@ function findWarningLevel(warning) {
             : -1;
 }
 
-// Since the old warning object is not a parse object we need a separate method for it
-function findOldWarningLevel(warning) {
-    return (warning.hasOwnProperty('dangerLevel')) ? warning.dangerLevel
-        : (warning.hasOwnProperty('activityLevel')) ? warning.activityLevel
-            : -1;
+function findPreviousWarningLevel(warning) {
+    return (warning.has('previousDangerLevel')) ? warning.get('previousDangerLevel')
+        : (warning.has('previousActivityLevel')) ? warning.get('previousActivityLevel')
+            : -1;    
 }
 
-function warningLevelHasChanged(newWarning, oldWarning) {
-    var oldLevel = findOldWarningLevel(oldWarning),
-        newLevel = findWarningLevel(newWarning);
-
-    return oldLevel !== -1
-        && newLevel !== -1
+function warningLevelHasChanged(newLevel, oldLevel) {
+    return oldLevel !== "-1"
+        && newLevel !== "-1"
         && oldLevel !== newLevel;
 }
 
-function warningLevelHasChangedSignificantly(newWarning, oldWarning) {
-    var oldLevel = findOldWarningLevel(oldWarning),
-        newLevel = findWarningLevel(newWarning);
+function dayThreeLevelHasChanged(newLevel, oldLevel) {
 
-    return oldLevel === SIGNIFICANT_CHANGE_OLD_LEVEL
-        && newLevel > SIGNIFICANT_CHANGE_THRESHOLD;
+    if(oldLevel === "0")
+        return newLevel !== "1" 
+            && newLevel !== "0";
+    else
+        return warningLevelHasChanged(newLevel, oldLevel);
 }
 
-function areaIDForArea(area) {
-    return area.has('regionId') ? area.get('regionId')
-        : area.has('countyId') ? area.get('countyId')
-            : area.has('municipalityId') ? area.get('municipalityId')
+function areaIDForWarning(warning) {
+    return warning.has('regionId') ? warning.get('regionId')
+        : warning.has('municipalityId') ? warning.get('municipalityId')
+            : warning.has('countyId') ? warning.get('countyId')
                 : -1;
 }
 
-function pushUpdates(area, warningType, oldForecast, newForecast) {
-    var promise = Parse.Promise.as(),
-        areaID = areaIDForArea(area);
+function avalancheRegionForId(regionId) {
+    var query = new Parse.Query("AvalancheRegion");
+    query.equalTo("regionId", regionId);
+    return query.first();
+}
 
-    promise = promise.then(function () {
-        var changedWarning = _.find(newForecast, function (warning, index) {
-            if (warningLevelHasChanged(warning, oldForecast[index])) {
-                if (index < 2
-                        || (index === 2
-                            && warningLevelHasChangedSignificantly(warning, oldForecast[index])
-                           )
-                        ) {
-                    return warning;
-                }
+function countyRegionForId(countyId) {
+    var query = new Parse.Query("County");
+    query.equalTo("countyId", countyId);
+    return query.first();
+}
+
+function municipalityRegionForId(municipalityId) {
+    var query = new Parse.Query("Municipality");
+    query.equalTo("municipalityId", municipalityId);
+    return query.first();
+}
+
+function forecastDaysFromNow(warning) {
+    var validToMoment = moment(warning.get("validTo"));
+    var nowMoment = moment();
+    
+    return validToMoment.diff(nowMoment, 'days');
+}
+
+function forecastDayAsString(warning) {
+    var validToMoment = moment(warning.get("validTo"));
+    var nowMoment = moment();
+    
+    switch(forecastDaysFromNow(warning))
+    {
+        case 0:
+          return "Today";
+        case 1:
+          return "Tomorrow";
+        default:
+          return validToMoment.add('h', 1).format("dddd");
+    }
+}
+
+function areaForWarning(warning) {
+    if (warning.has('regionId')) {
+        return avalancheRegionForId(warning.get('regionId'));
+    } else if (warning.has('municipalityId')) {
+        return municipalityRegionForId(warning.get('municipalityId'));
+    } else if (warning.has('countyId')) {
+        return countyRegionForId(warning.get('countyId'));
+    }
+}
+
+function pushQueryForAreaClassnameAndId(className, areaId) {
+    var query = new Parse.Query(Parse.Installation);
+    query.equalTo('deviceType', 'ios');
+    query.equalTo('channels', className + "-" + areaId);
+    return query;
+}
+
+function pushWarningUpdate(warningType, warning) {
+    var currentLevel = findWarningLevel(warning),
+        previousLevel = findPreviousWarningLevel(warning),
+        forecastDays = forecastDaysFromNow(warning);
+    
+    if ((forecastDays === 2 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
+            || (forecastDays !== 2 && warningLevelHasChanged(currentLevel, previousLevel))) {     
+            
+        areaForWarning(warning).then(function (area) {
+            if (area !== undefined) {
+                return Parse.Push.send({
+                    where: pushQueryForAreaClassnameAndId(area.className, areaIDForWarning(warning)),
+                    data: {
+                        alert: {
+                            "loc-key": warningType + " forecast changed " + forecastDayAsString(warning),
+                            "loc-args": [
+                                area.get("name"),
+                                previousLevel,
+                                currentLevel 
+                            ]
+                        },
+                        warningType: warningType,
+                        areaType: area.className,
+                        areaId: areaIDForWarning(warning)
+                    }
+                }).then(function () {}, function (error) {
+                    console.error("Error pushing warning: " + JSON.stringify(error));
+                });
             }
         });
-
-
-        if (changedWarning !== undefined && areaID !== -1) {
-            var locArgs = [],
-                locArgsOldTemp = [],
-                locArgsNewTemp = [];
-
-            _.each(newForecast, function (newWarning, index) {
-                locArgsOldTemp.push(findOldWarningLevel(oldForecast[index]));
-                locArgsNewTemp.push(findWarningLevel(newWarning));
-            });
-
-            locArgs.push(area.get("name"));
-            locArgs = locArgs.concat(locArgsOldTemp).concat(locArgsNewTemp);
-
-            var pushQuery = new Parse.Query(Parse.Installation);
-            pushQuery.equalTo('deviceType', 'ios');
-            pushQuery.equalTo('channels', area.className + '-' + areaID);
-            return Parse.Push.send({
-                where: pushQuery,
-                data: {
-                    alert : {
-                        "loc-key": warningType + " forecast changed",
-                        "loc-args": locArgs
-                    },
-                    warningType: warningType,
-                    areaType: area.className,
-                    areaId: areaID
-                }
-            });
-        }
-
-        return Parse.Promise.as();
-    });
-
-    return promise;
+    }
 }
 
 module.exports = {
-    pushUpdates: pushUpdates
+    pushWarningUpdate: pushWarningUpdate
 };

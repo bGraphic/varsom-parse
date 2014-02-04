@@ -3,75 +3,60 @@
 
 'use strict';
 
-var _ = require('underscore');
-var config = require('cloud/config.js');
-var floodWarningsJSONParser = require('cloud/warnings-json-parser.js').floodWarningsJSONParser;
-var landSlideWarningsJSONParser = require('cloud/warnings-json-parser.js').landSlideWarningsJSONParser;
-var avalancheWarningsJSONParser = require('cloud/avalanche-json-parser.js').avalancheWarningsJSONParser;
+var apiHandler = require('cloud/nve-warnings-api-handler.js'),
+    deserializer = require('cloud/warnings-deserializer.js'),
+    processor = require('cloud/warnings-processor.js');
 
 function importFloodWarnings() {
-
-    return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.flood + '/CountySummary/1',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function (httpResponse) {
+    return apiHandler.fetchFloodWarnings().then(function (json) {
         console.log("Flood: json fetched");
-        return floodWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+        return deserializer.deserializeFloodWarnings(json, {
+            countyProcessor: processor.processFloodWarningsForCounty,
+            municipalityProcessor: processor.processFloodWarningsForMunicipality
+        });
     }).then(function () {
-        console.log("Flood: json imported");
-        return Parse.Promise.as();
+        console.log('Finished importing flood warnings');
     }, function (error) {
         console.error("Flood: import failed - " + JSON.stringify(error));
         if (error.code === 100) {
             console.log("Flood: try again");
             return importFloodWarnings();
         } else {
-            console.log("Avalanche: do not try again");
+            console.log("Flood: do not try again");
             return Parse.Promise.as();
         }
     });
 }
 
 function importLandSlideWarnings() {
-
-    return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.landSlide + '/CountySummary/1',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function (httpResponse) {
+    return apiHandler.fetchLandSlideWarnings().then(function (json) {
         console.log("Landslide: json fetched");
-        return landSlideWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+        return deserializer.deserializeLandSlideWarnings(json, {
+            countyProcessor: processor.processLandSlideWarningsForCounty,
+            municipalityProcessor: processor.processLandSlideWarningsForMunicipality
+        });
     }).then(function () {
-        console.log("Landslide: json imported");
-        return Parse.Promise.as();
-    }, function (error) {
+        console.log('Finished importing landslide warnings');
+    }, function (error) {
         console.error("Landslide: import failed - " + JSON.stringify(error));
         if (error.code === 100) {
             console.log("Landslide: try again");
             return importLandSlideWarnings();
         } else {
-            console.log("Avalanche: do not try again");
+            console.log("Landslide: do not try again");
             return Parse.Promise.as();
         }
     });
 }
 
 function importAvalancheWarnings() {
-
-    return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.avalanche + '/RegionSummary/Detail/1',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function (httpResponse) {
+    return apiHandler.fetchAvalancheWarnings().then(function (json) {
         console.log("Avalanche: json fetched");
-        return avalancheWarningsJSONParser.warningsJSONToWarnings(httpResponse.data);
+        return deserializer.deserializeAvalancheWarnings(json, 
+            processor.processAvalancheWarningsForRegion
+        );
     }).then(function () {
         console.log("Avalanche: json imported");
-        return Parse.Promise.as();
     }, function (error) {
         console.error("Avalanche: import failed - " + JSON.stringify(error));
         if (error.code === 100) {
@@ -85,13 +70,11 @@ function importAvalancheWarnings() {
 }
 
 function importAllWarnings() {
-    return Parse.Promise.as().then(function () {
-        return importAvalancheWarnings();
-    }).then(function () {
-        return importLandSlideWarnings();
-    }).then(function () {
-        return importFloodWarnings();
-    });
+    return Parse.Promise.when([
+        importAvalancheWarnings(),
+        importFloodWarnings(),
+        importLandSlideWarnings()
+    ]);
 }
 
 module.exports = {
