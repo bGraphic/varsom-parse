@@ -15,12 +15,13 @@ function saveAll(objects) {
     return promise;
 }
 
-function updateWarningWithWarning(warning, newWarning, warningType) {
+function updateWarningWithWarning(warning, newWarning) {
     
     warning.set('forecastDay', newWarning.get('forecastDay'));
     
-    if (warningType === 'AvalancheWarning') {
+    if (newWarning.has('regionId')) {
         warning.set('previousDangerLevel',  warning.get('dangerLevel'));
+        
         warning.set('dangerLevel',          newWarning.get('dangerLevel'));
         warning.set('mainText',             newWarning.get('mainText'));
         warning.set('avalancheWarning',     newWarning.get('avalancheWarning'));
@@ -35,7 +36,8 @@ function updateWarningWithWarning(warning, newWarning, warningType) {
         warning.set('exposedHeightType',        newWarning.get('exposedHeightType'));
         warning.set('exposedHeightValue',       newWarning.get('exposedHeightValue'));
         warning.set('causeListJSON',            newWarning.get('causeListJSON'));
-        if (warningType === "LandSlideWarning") {
+        
+        if (newWarning.has('landSlideTypeListJSON')) {
             warning.set('landSlideTypeListJSON', newWarning.get('landSlideTypeListJSON'));
         }
     }
@@ -43,22 +45,22 @@ function updateWarningWithWarning(warning, newWarning, warningType) {
     return warning;
 }
 
-function isSameRegion(warning, newWarning) {
-    var isSameRegion = false;
+function isSameArea(warning, newWarning) {
+    var isSame = false;
     
     if (warning.has('municipalityId') && newWarning.has('municipalityId')) {
-        isSameRegion = warning.get('municipalityId') === newWarning.get('municipalityId');
+        isSame = warning.get('municipalityId') === newWarning.get('municipalityId');
     } else if (warning.has('countyId') && newWarning.has('countyId')) {
-        isSameRegion = warning.get('countyId') === newWarning.get('countyId');
+        isSame = warning.get('countyId') === newWarning.get('countyId');
     } else if (warning.has('regionId') && newWarning.has('regionId')) {
-        isSameRegion = warning.get('regionId') === newWarning.get('regionId');
+        isSame = warning.get('regionId') === newWarning.get('regionId');
     }
         
-    return isSameRegion;
+    return isSame;
 }
 
 function isSameWarning(warning, newWarning) {
-    return isSameRegion(warning, newWarning)
+    return isSameArea(warning, newWarning)
         && warning.get('validFrom').getTime() === newWarning.get('validFrom').getTime()
         && warning.get('validTo').getTime() === newWarning.get('validTo').getTime();
 }
@@ -69,16 +71,16 @@ function findWarningInForecast(warning, forecast) {
     });
 }
 
-function updateForecastWithWarnings(currentForecast, newForecast, warningType) {    
+function updateForecastWithWarnings(currentForecast, newForecast) {    
     return _.map(newForecast, function (newWarning) {
         var existingWarning = findWarningInForecast(newWarning, currentForecast);
-        return existingWarning ? updateWarningWithWarning(existingWarning, newWarning, warningType) : newWarning;
+        return existingWarning ? updateWarningWithWarning(existingWarning, newWarning) : newWarning;
     });
 }
 
 function processWarningsForRegion(region, newWarnings, warningType) {
     var currentWarnings = region.get(warningType + 'Forecast');
-    region.set(warningType + 'Forecast', updateForecastWithWarnings(currentWarnings, newWarnings, warningType));
+    region.set(warningType + 'Forecast', updateForecastWithWarnings(currentWarnings, newWarnings));
     return region;
 }
 

@@ -23,6 +23,7 @@ function deserializeWarning(warningJSON, warningType) {
     warning.set('exposedHeightType', warningJSON.ExposedHeightType);
     warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
     warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
+    
     if (warningType === "LandSlideWarning") {
         warning.set('landSlideTypeListJSON', parseIdListJSONToArray(warningJSON.LandSlideTypeList));
     }
