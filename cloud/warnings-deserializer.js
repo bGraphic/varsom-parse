@@ -31,12 +31,17 @@ function deserializeWarning(warningJSON, warningType) {
     return warning;
 }
 
-function parseAvalancheProblems(avalancheProblemsJSON) {
+function deserializeAvalancheProblems(avalancheProblemsJSON) {
     return _.map(avalancheProblemsJSON, function (problemJSON) {
         return {
             extId: problemJSON.AvalancheExtId,
+            causeId: problemJSON.AvalCauseId,
+            triggerSimpleId: problemJSON.AvalTriggerSimpleId,
             probabilityId: problemJSON.AvalProbabilityId,
-            triggerId: problemJSON.AvalTriggerSimpleId
+            exposedHeightFill: problemJSON.ExposedHeightFill,
+            exposedHeight1: problemJSON.ExposedHeight1,
+            exposedHeight2: problemJSON.ExposedHeight2,
+            validExpositions: problemJSON.ValidExpositions
         };
     });
 }
@@ -48,9 +53,20 @@ function deserializeAvalancheWarning(avalancheWarningJSON) {
     avalancheWarning.set('validTo', new Date(avalancheWarningJSON.ValidTo + "+01:00"));
     avalancheWarning.set('previousDangerLevel', '-1');
     avalancheWarning.set('dangerLevel', avalancheWarningJSON.DangerLevel);
-    avalancheWarning.set('mainText', avalancheWarningJSON.MainText);
-    avalancheWarning.set('avalancheWarning', avalancheWarningJSON.AvalancheWarning);
-    avalancheWarning.set('avalancheProblems', parseAvalancheProblems(avalancheWarningJSON.AvalancheProblems));
+    
+    if(avalancheWarningJSON.MainText)
+        avalancheWarning.set('mainText', avalancheWarningJSON.MainText.trim());
+    
+    if(avalancheWarningJSON.AvalancheWarning)
+        avalancheWarning.set('avalancheWarning', avalancheWarningJSON.AvalancheWarning.trim());
+    
+    if(avalancheWarningJSON.AvalancheDanger)
+        avalancheWarning.set('avalancheDanger', avalancheWarningJSON.AvalancheDanger.trim());
+    
+    if(avalancheWarningJSON.AlpineWeather)
+        avalancheWarning.set('alpineWeather', avalancheWarningJSON.AlpineWeather.trim());
+    
+    avalancheWarning.set('avalancheProblems', deserializeAvalancheProblems(avalancheWarningJSON.AvalancheProblems));
 
     return avalancheWarning;
 }
