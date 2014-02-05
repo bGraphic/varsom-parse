@@ -1,4 +1,4 @@
-/*jslint node: true, nomen: true, vars: true */
+/*jslint node: true, nomen: true, vars: true, laxbreak: true, expr: true */
 /*global Parse, unescape */
 
 'use strict';
@@ -9,6 +9,7 @@ function saveAll(objects) {
     var promise = new Parse.Promise();
     
     Parse.Object.saveAll(objects, function (list, error) {
+        
         list ? promise.resolve(list) : promise.reject(error);    
     });
     
