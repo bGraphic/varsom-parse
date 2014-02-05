@@ -67,13 +67,13 @@ function forecastDaysFromNow(warning) {
 
 function forecastDayAsString(warning) {
     var validToMoment = moment(warning.get("validTo"));
-    var nowMoment = moment();
-    
+    var nowMoment = validToMoment;
+    console.log(nowMoment.format());
     switch(forecastDaysFromNow(warning))
     {
-        case 0:
-          return "Today";
         case 1:
+          return "Today";
+        case 2:
           return "Tomorrow";
         default:
           return validToMoment.add('h', 1).format("dddd");
@@ -102,8 +102,10 @@ function pushWarningUpdate(warningType, warning) {
         previousLevel = findPreviousWarningLevel(warning),
         forecastDays = forecastDaysFromNow(warning);
     
-    if ((forecastDays === 2 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
-            || (forecastDays !== 2 && warningLevelHasChanged(currentLevel, previousLevel))) {     
+        console.log('ForecastDays: ' + forecastDays);
+    
+    if ((forecastDays > 2 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
+            || (forecastDays <= 2 && warningLevelHasChanged(currentLevel, previousLevel))) {     
             
         areaForWarning(warning).then(function (area) {
             if (area !== undefined) {
