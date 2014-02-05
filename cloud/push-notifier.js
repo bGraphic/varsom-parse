@@ -1,4 +1,4 @@
-/*jslint node: true, nomen: true */
+/*jslint node: true, nomen: true, vars: true, laxbreak: true */
 /*global Parse */
 
 'use strict';
