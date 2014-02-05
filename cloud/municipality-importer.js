@@ -6,11 +6,22 @@
 var _ = require('underscore');
 var config = require('cloud/config.js');
 
+function nameFixer(name) {
+    name = name.trim();
+    name = name.replace(/[^\s]+/g, function(word) {
+        return word.replace(/^./, function(first) {
+            return first.toUpperCase();
+        });
+    });
+    
+    return name;
+}
+
 function updateMunicipalityWithJSON(municipality, municipalityJSON) {
 
     municipality.set('municipalityId', municipalityJSON.Id);
     municipality.set('countyId', municipalityJSON.WarningList[0].CountyList[0].Id);
-    municipality.set('name', municipalityJSON.Name);
+    municipality.set('name', nameFixer(municipalityJSON.Name));
 
     return municipality;
 }
