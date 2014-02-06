@@ -61,19 +61,19 @@ function municipalityRegionForId(municipalityId) {
 function forecastDaysFromNow(warning) {
     var validToMoment = moment(warning.get("validTo"));
     var nowMoment = moment();
+    var forecastDays = validToMoment.diff(nowMoment, 'days', true);
     
-    return validToMoment.diff(nowMoment, 'days');
+    return Math.floor(forecastDays);
 }
 
 function forecastDayAsString(warning) {
+
     var validToMoment = moment(warning.get("validTo"));
-    var nowMoment = validToMoment;
-    console.log(nowMoment.format());
     switch(forecastDaysFromNow(warning))
     {
-        case 1:
+        case 0:
           return "Today";
-        case 2:
+        case 1:
           return "Tomorrow";
         default:
           return validToMoment.add('h', 1).format("dddd");
@@ -102,10 +102,10 @@ function pushWarningUpdate(warningType, warning) {
         previousLevel = findPreviousWarningLevel(warning),
         forecastDays = forecastDaysFromNow(warning);
     
-        console.log('ForecastDays: ' + forecastDays);
+    console.log("Warning days from now: " + forecastDays);
     
-    if ((forecastDays > 2 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
-            || (forecastDays <= 2 && warningLevelHasChanged(currentLevel, previousLevel))) {     
+    if ((forecastDays > 1 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
+            || (forecastDays <= 1 && warningLevelHasChanged(currentLevel, previousLevel))) {     
             
         areaForWarning(warning).then(function (area) {
             if (area !== undefined) {
