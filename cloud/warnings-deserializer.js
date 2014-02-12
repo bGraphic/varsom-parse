@@ -37,6 +37,7 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
             extId: problemJSON.AvalancheExtId,
             causeId: problemJSON.AvalCauseId,
             triggerSimpleId: problemJSON.AvalTriggerSimpleId,
+            destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
             probabilityId: problemJSON.AvalProbabilityId,
             exposedHeightFill: problemJSON.ExposedHeightFill,
             exposedHeight1: problemJSON.ExposedHeight1,
