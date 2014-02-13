@@ -102,8 +102,6 @@ function pushWarningUpdate(warningType, warning) {
         previousLevel = findPreviousWarningLevel(warning),
         forecastDays = forecastDaysFromNow(warning);
     
-    console.log("Warning days from now: " + forecastDays);
-    
     if ((forecastDays > 1 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
             || (forecastDays <= 1 && warningLevelHasChanged(currentLevel, previousLevel))) {     
             
