@@ -24,15 +24,6 @@ function warningLevelHasChanged(newLevel, oldLevel) {
         && oldLevel !== newLevel;
 }
 
-function dayThreeLevelHasChanged(newLevel, oldLevel) {
-
-    if(oldLevel === "0")
-        return newLevel !== "1" 
-            && newLevel !== "0";
-    else
-        return warningLevelHasChanged(newLevel, oldLevel);
-}
-
 function areaIDForWarning(warning) {
     return warning.has('regionId') ? warning.get('regionId')
         : warning.has('municipalityId') ? warning.get('municipalityId')
@@ -102,8 +93,7 @@ function pushWarningUpdate(warningType, warning) {
         previousLevel = findPreviousWarningLevel(warning),
         forecastDays = forecastDaysFromNow(warning);
     
-    if ((forecastDays > 1 && dayThreeLevelHasChanged(currentLevel, previousLevel)) 
-            || (forecastDays <= 1 && warningLevelHasChanged(currentLevel, previousLevel))) {     
+    if (forecastDays < 2 && warningLevelHasChanged(currentLevel, previousLevel)) {     
             
         areaForWarning(warning).then(function (area) {
             if (area !== undefined) {
