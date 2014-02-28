@@ -25,7 +25,7 @@ function deserializeWarning(warningJSON, warningType) {
     warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
     
     if (warningType === "LandSlideWarning") {
-        warning.set('landSlideTypeListJSON', parseIdListJSONToArray(warningJSON.LandSlideTypeList));
+        warning.set('typeList', parseIdListJSONToArray(warningJSON.LandSlideTypeList));
     }
 
     return warning;
