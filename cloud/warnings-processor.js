@@ -94,8 +94,13 @@ function processWarningsForCounty(countyWarnings, warningType) {
         countyQuery.include(warningType + 'Forecast');
         return countyQuery.first();
     }).then(function (county) {
-        var updatedCounty = processWarningsForRegion(county, countyWarnings.warnings, warningType);
-        return updatedCounty.save();
+        if(county) {
+          var updatedCounty = processWarningsForRegion(county, countyWarnings.warnings, warningType);
+          return updatedCounty.save();
+        } else {
+          console.error('No county in Parse with id: ' + countyWarnings.countyId);
+          return Parse.Promise.as();
+        }
     });
 }
 
@@ -124,8 +129,13 @@ function processAvalancheWarningsForRegion(regionWarnings, warningType) {
         regionQuery.include(warningType + 'Forecast');
         return regionQuery.first();
     }).then(function (region) {
-        var updatedRegion = processWarningsForRegion(region, regionWarnings.warnings, warningType);   
-        return updatedRegion.save();
+        if(region) {
+          var updatedRegion = processWarningsForRegion(region, regionWarnings.warnings, warningType);   
+          return updatedRegion.save();
+        } else {
+          console.error('No avalanche region in Parse with id: ' + regionWarnings.regionId);
+          return Parse.Promise.as();
+        }
     });
 }
 
