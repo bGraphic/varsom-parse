@@ -7,7 +7,7 @@ var _ = require('underscore');
 
 function parseIdListJSONToArray(listJSON) {
     return _.map(listJSON, function (entryJSON) {
-        return entryJSON.ID;
+        return entryJSON.Id;
     });
 }
 

@@ -38,10 +38,10 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('warningText',              newWarning.get('warningText'));
         warning.set('exposedHeightType',        newWarning.get('exposedHeightType'));
         warning.set('exposedHeightValue',       newWarning.get('exposedHeightValue'));
-        warning.set('causeListJSON',            newWarning.get('causeListJSON'));
+        warning.set('causeList',                newWarning.get('causeList'));
         
-        if (newWarning.has('landSlideTypeListJSON')) {
-            warning.set('landSlideTypeListJSON', newWarning.get('landSlideTypeListJSON'));
+        if (newWarning.has('typeList')) {
+            warning.set('typeList', newWarning.get('typeList'));
         }
     }
     
