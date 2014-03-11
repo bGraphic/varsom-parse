@@ -24,7 +24,7 @@ function setRegionRegOpsUrl(region)
     if(regionId < 10)
       regionId = "0" + regionId;
   
-    region.set('regOpsUrl', 'http://www.regobs.no/Search/Search?GeoHazard=10&SelectedTypes=-1&SelectedRegions=1'+regionId+'&SelectedPeriode=2'); 
+    region.set('regObsUrl', 'http://www.regobs.no/Search/Search?GeoHazard=10&SelectedTypes=-1&SelectedRegions=1'+regionId+'&SelectedPeriode=2'); 
     
     return region;
 }
