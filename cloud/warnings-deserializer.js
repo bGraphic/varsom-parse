@@ -16,12 +16,19 @@ function deserializeWarning(warningJSON, warningType) {
 
     warning.set('validFrom', new Date(warningJSON.ValidFrom + "+01:00"));
     warning.set('validTo', new Date(warningJSON.ValidTo + "+01:00"));
+  
+    warning.set('publishTime', new Date(warningJSON.PublishTime + "+01:00"));
+    warning.set('nextWarningTime', new Date(warningJSON.NextWarningTime + "+01:00"));
+  
     warning.set('previousActivityLevel', '-1');
     warning.set('activityLevel', warningJSON.ActivityLevel);
+    
     warning.set('mainText', warningJSON.MainText);
     warning.set('warningText', warningJSON.WarningText);
+    
     warning.set('exposedHeightType', warningJSON.ExposedHeightType);
     warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
+    
     warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
     
     if (warningType === "LandSlideWarning") {
@@ -52,6 +59,10 @@ function deserializeAvalancheWarning(avalancheWarningJSON) {
 
     avalancheWarning.set('validFrom', new Date(avalancheWarningJSON.ValidFrom + "+01:00"));
     avalancheWarning.set('validTo', new Date(avalancheWarningJSON.ValidTo + "+01:00"));
+  
+    avalancheWarning.set('publishTime', new Date(avalancheWarningJSON.PublishTime + "+01:00"));
+    avalancheWarning.set('nextWarningTime', new Date(avalancheWarningJSON.NextWarningTime + "+01:00"));
+  
     avalancheWarning.set('previousDangerLevel', '-1');
     avalancheWarning.set('dangerLevel', avalancheWarningJSON.DangerLevel);
     

@@ -18,9 +18,11 @@ function saveAll(objects) {
 
 function updateWarningWithWarning(warning, newWarning) {
     
-    warning.set('forecastDay', newWarning.get('forecastDay'));
+    warning.set('publishTime',      newWarning.get('publishTime'));
+    warning.set('nextWarningTime',  newWarning.get('nextWarningTime'));
     
     if (newWarning.has('regionId')) {
+      
         warning.set('previousDangerLevel',  warning.get('dangerLevel'));
         
         warning.set('dangerLevel',          newWarning.get('dangerLevel'));
@@ -29,7 +31,9 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('avalancheDanger',      newWarning.get('avalancheDanger'));
         warning.set('alpineWeather',        newWarning.get('alpineWeather'));
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
+      
     } else {
+        
         warning.set('previousActivityLevel',    warning.get('activityLevel'));
         
         warning.set('municipalityId',           newWarning.get('municipalityId'));
