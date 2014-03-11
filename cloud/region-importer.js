@@ -20,7 +20,12 @@ function updateRegion(region, newRegion) {
 
 function setRegionRegOpsUrl(region)
 {
-    region.set('regOpsUrl', 'http://www.regobs.no/Search/Search?GeoHazard=10&SelectedTypes=-1&SelectedRegions=1'+region.get('regionId')+'&SelectedPeriode=2'); 
+    var regionId = region.get('regionId');
+    if(regionId < 10)
+      regionId = "0" + regionId;
+  
+    region.set('regOpsUrl', 'http://www.regobs.no/Search/Search?GeoHazard=10&SelectedTypes=-1&SelectedRegions=1'+regionId+'&SelectedPeriode=2'); 
+    
     return region;
 }
 
