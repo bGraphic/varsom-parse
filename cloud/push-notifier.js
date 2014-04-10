@@ -15,7 +15,7 @@ function findWarningLevel(warning) {
 function findPreviousWarningLevel(warning) {
     return (warning.has('previousDangerLevel')) ? warning.get('previousDangerLevel')
         : (warning.has('previousActivityLevel')) ? warning.get('previousActivityLevel')
-            : -1;    
+            : -1;
 }
 
 function warningLevelHasChanged(newLevel, oldLevel) {
@@ -29,6 +29,11 @@ function areaIDForWarning(warning) {
         : warning.has('municipalityId') ? warning.get('municipalityId')
             : warning.has('countyId') ? warning.get('countyId')
                 : -1;
+}
+
+function parentIDForWarning(warning) {
+    return warning.has('countyId') ? warning.get('countyId')
+        : null;
 }
 
 function avalancheRegionForId(regionId) {
@@ -53,7 +58,7 @@ function forecastDaysFromNow(warning) {
     var validToMoment = moment(warning.get("validTo"));
     var nowMoment = moment();
     var forecastDays = validToMoment.diff(nowMoment, 'days', true);
-    
+
     return Math.floor(forecastDays);
 }
 
@@ -92,9 +97,9 @@ function pushWarningUpdate(warningType, warning) {
     var currentLevel = findWarningLevel(warning),
         previousLevel = findPreviousWarningLevel(warning),
         forecastDays = forecastDaysFromNow(warning);
-    
-    if (forecastDays < 2 && warningLevelHasChanged(currentLevel, previousLevel)) {     
-            
+
+    if (forecastDays < 2 && warningLevelHasChanged(currentLevel, previousLevel)) {
+
         areaForWarning(warning).then(function (area) {
             if (area !== undefined) {
                 return Parse.Push.send({
@@ -106,12 +111,13 @@ function pushWarningUpdate(warningType, warning) {
                             "loc-args": [
                                 area.get("name"),
                                 previousLevel,
-                                currentLevel 
+                                currentLevel
                             ]
                         },
-                        warningType: warningType,
-                        areaType: area.className,
-                        areaId: areaIDForWarning(warning)
+                        warningType: ""+warningType,
+                        areaType: ""+area.className,
+                        areaId: ""+areaIDForWarning(warning),
+                        parentId: ""+parentIDForWarning(warning)
                     }
                 }).then(function () {}, function (error) {
                     console.error("Error pushing warning: " + JSON.stringify(error));
