@@ -67,6 +67,10 @@ function isSameArea(warning, newWarning) {
 }
 
 function isSameWarning(warning, newWarning) {
+    //If warnings has been deleted but not reference
+    if(!warning)
+      return false;
+
     return isSameArea(warning, newWarning)
         && warning.get('validFrom').getTime() === newWarning.get('validFrom').getTime()
         && warning.get('validTo').getTime() === newWarning.get('validTo').getTime();
