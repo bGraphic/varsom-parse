@@ -18,6 +18,17 @@ function updateRegion(region, newRegion) {
     return region;
 }
 
+function setRegionRegOpsUrl(region)
+{
+    var regionId = region.get('regionId');
+    if(regionId < 10)
+      regionId = "0" + regionId;
+  
+    region.set('regObsUrl', 'http://www.regobs.no/Search/Search?GeoHazard=10&SelectedTypes=-1&SelectedRegions=1'+regionId+'&SelectedPeriode=2'); 
+    
+    return region;
+}
+
 function createOrUpdateRegions(newRegions) {
     var regionQuery = new Parse.Query('AvalancheRegion');
 
@@ -36,6 +47,8 @@ function createOrUpdateRegions(newRegions) {
                 region = updateRegion(region, newregion);
             }
 
+            region = setRegionRegOpsUrl(region);
+          
             promises.push(region.save());
 
             console.log("update/create " + region.get("regionId"));
