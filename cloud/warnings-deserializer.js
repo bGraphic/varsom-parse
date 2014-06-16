@@ -96,7 +96,7 @@ function updateCountyForecastWithMunicipalityForecast(countyForecast, municipali
 function deserializeWarnings(countyOverViewJSON, processors, warningType) {
     var promises = [];
 
-    _.each(countyOverViewJSON, function (countyJSON) {
+    _.each(countyOverViewJSON.CountyList, function (countyJSON) {
         var countyId = countyJSON.Id,
             countyForecast = [],
             municipalityForecasts = {};
