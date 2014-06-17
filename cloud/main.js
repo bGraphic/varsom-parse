@@ -3,5 +3,5 @@
 
 'use strict';
 
-require('cloud/warnings.js');
+// require('cloud/warnings.js');
 require('cloud/jobs.js');

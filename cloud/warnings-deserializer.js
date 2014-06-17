@@ -14,6 +14,22 @@ function parseIdListJSONToArray(listJSON) {
     });
 }
 
+function deserializeAvalancheProblems(avalancheProblemsJSON) {
+    return _.map(avalancheProblemsJSON, function (problemJSON) {
+        return {
+            extId: problemJSON.AvalancheExtId,
+            causeId: problemJSON.AvalCauseId,
+            triggerSimpleId: problemJSON.AvalTriggerSimpleId,
+            destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
+            probabilityId: problemJSON.AvalProbabilityId,
+            exposedHeightFill: problemJSON.ExposedHeightFill,
+            exposedHeight1: problemJSON.ExposedHeight1,
+            exposedHeight2: problemJSON.ExposedHeight2,
+            validExpositions: problemJSON.ValidExpositions
+        };
+    });
+}
+
 function deserializeWarning(warningJSON, warningType) {
     var warning = new Parse.Object(warningType);
     var timezone = "Europe/Oslo";
@@ -29,7 +45,6 @@ function deserializeWarning(warningJSON, warningType) {
 
     if (warningType === "LandSlideWarning" || warningType === "FloodWarning") {
 
-      warning.set('previousActivityLevel', '-1');
       warning.set('activityLevel', warningJSON.ActivityLevel);
 
       if(warningJSON.WarningText)
@@ -48,7 +63,6 @@ function deserializeWarning(warningJSON, warningType) {
 
     if(warningType === "AvalancheWarning") {
 
-      warning.set('previousDangerLevel', '-1');
       warning.set('dangerLevel', warningJSON.DangerLevel);
 
       if(warningJSON.AvalancheWarning)
@@ -64,30 +78,12 @@ function deserializeWarning(warningJSON, warningType) {
     return warning;
 }
 
-function deserializeAvalancheProblems(avalancheProblemsJSON) {
-    return _.map(avalancheProblemsJSON, function (problemJSON) {
-        return {
-            extId: problemJSON.AvalancheExtId,
-            causeId: problemJSON.AvalCauseId,
-            triggerSimpleId: problemJSON.AvalTriggerSimpleId,
-            destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
-            probabilityId: problemJSON.AvalProbabilityId,
-            exposedHeightFill: problemJSON.ExposedHeightFill,
-            exposedHeight1: problemJSON.ExposedHeight1,
-            exposedHeight2: problemJSON.ExposedHeight2,
-            validExpositions: problemJSON.ValidExpositions
-        };
-    });
-}
-
 function updateCountyForecastWithMunicipalityForecast(countyForecast, municipalityForecast) {
     _.each(municipalityForecast, function (warning, i) {
-        var countyWarning = warning.clone();
-        countyWarning.set("municipalityId", null);
         if (i > countyForecast.length - 1) {
-            countyForecast.push(countyWarning);
+            countyForecast.push(warning);
         } else if (warning.get("activityLevel") > countyForecast[i].get("activityLevel")) {
-            countyForecast[i] = countyWarning;
+            countyForecast[i] = warning;
         }
     });
     return countyForecast;
