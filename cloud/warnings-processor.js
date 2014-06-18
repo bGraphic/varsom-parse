@@ -114,16 +114,16 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
-function processWarningsForArea(region, newWarnings, warningType) {
-    var currentWarnings = region.get(warningType + 'Forecast');
-    region.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
-
-    if(region.has(warningType + 'HighestForecastLevel')) {
-        region.set(warningType + 'PreviousHighestForecastLevel', region.get(warningType + 'HighestForecastLevel'));
+function processWarningsForArea(area, newWarnings, warningType) {
+    var currentWarnings = area.get(warningType + 'Forecast');
+    area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
+    area.set(warningType + 'NewHighestForecastLevel', highestForecastLevel(area.get(warningType + 'Forecast')));
+    if(!area.has(warningType + 'HighestForecastLevel')) {
+      console.log("Setting Highest level");
+      area.set(warningType + 'HighestForecastLevel', area.get(warningType + 'NewHighestForecastLevel'));
     }
-    
-    region.set(warningType + 'HighestForecastLevel', highestForecastLevel(region.get(warningType + 'Forecast')));
-    return region;
+
+    return area;
 }
 
 function processWarningsForCounty(countyWarnings, warningType) {
