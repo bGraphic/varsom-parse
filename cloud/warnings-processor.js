@@ -40,8 +40,6 @@ function updateWarningWithWarning(warning, newWarning) {
 
     if (newWarning.has('regionId')) {
 
-        warning.set('previousDangerLevel',  warning.get('dangerLevel'));
-
         warning.set('dangerLevel',          newWarning.get('dangerLevel'));
         warning.set('mainText',             newWarning.get('mainText'));
         warning.set('avalancheWarning',     newWarning.get('avalancheWarning'));
@@ -50,8 +48,6 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
 
     } else {
-
-        warning.set('previousActivityLevel',    warning.get('activityLevel'));
 
         warning.set('municipalityId',           newWarning.get('municipalityId'));
         warning.set('activityLevel',            newWarning.get('activityLevel'));
@@ -99,17 +95,35 @@ function findWarningInForecast(warning, forecast) {
     });
 }
 
-function updateForecastWithWarnings(currentForecast, newForecast) {
+function updateForecastWithNewForecast(currentForecast, newForecast) {
     return _.map(newForecast, function (newWarning) {
         var existingWarning = findWarningInForecast(newWarning, currentForecast);
         return existingWarning ? updateWarningWithWarning(existingWarning, newWarning) : newWarning;
     });
 }
 
-function processWarningsForArea(region, newWarnings, warningType) {
-    var currentWarnings = region.get(warningType + 'Forecast');
-    region.set(warningType + 'Forecast', updateForecastWithWarnings(currentWarnings, newWarnings));
-    return region;
+function highestForecastLevel(forecast) {
+    var highestForecastLevel = -1;
+    _.each(forecast, function(warning) {
+        if(warning.has('activityLevel') && warning.get('activityLevel') > highestForecastLevel) {
+            highestForecastLevel = warning.get('activityLevel');
+        } else if(warning.has('dangerLevel') && warning.get('dangerLevel') > highestForecastLevel) {
+            highestForecastLevel = warning.get('dangerLevel');
+        }
+    });
+    return highestForecastLevel;
+}
+
+function processWarningsForArea(area, newWarnings, warningType) {
+    var currentWarnings = area.get(warningType + 'Forecast');
+    area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
+    area.set(warningType + 'NewHighestForecastLevel', highestForecastLevel(area.get(warningType + 'Forecast')));
+    if(!area.has(warningType + 'HighestForecastLevel')) {
+      console.log("Setting Highest level");
+      area.set(warningType + 'HighestForecastLevel', area.get(warningType + 'NewHighestForecastLevel'));
+    }
+
+    return area;
 }
 
 function processWarningsForCounty(countyWarnings, warningType) {
