@@ -57,7 +57,7 @@ function pushHighestForecastLevelUpdate(area, warningType) {
     unsetNewForcastLevel(area, warningType);
 
     if(highestForecastLevelHasChanged(currentLevel, newLevel)) {
-        console.log("Sending push, forcast level changed");
+
         return Parse.Push.send({
             expiration_interval: 43200, //12 hours
             where: pushQueryForAreaClassnameAndId(area.className, areaIDForArea(area)),
@@ -77,11 +77,14 @@ function pushHighestForecastLevelUpdate(area, warningType) {
             }
         }).then(function () {
             setCurrentToNewForecastLevel(area, warningType, newLevel);
+            return Parse.Promise.as();
         }, function (error) {
             console.error("Error pushing warning: " + JSON.stringify(error));
+            return Parse.Promise.as();
         });
+
     } else {
-      return Parse.Promise.as();
+        return Parse.Promise.as();
     }
 }
 
