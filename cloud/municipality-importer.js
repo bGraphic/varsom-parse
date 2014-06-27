@@ -13,7 +13,7 @@ function nameFixer(name) {
             return first.toUpperCase();
         });
     });
-    
+
     return name;
 }
 
@@ -65,7 +65,7 @@ function countySummariesJSONToMunicipalities(countySummariesJSON) {
 
     _.each(countySummariesJSON, function (countySummaryJSON) {
 
-        var countyId = countySummaryJSON.Id;
+        console.log("Update/create municipalites for county: " + countySummaryJSON.Id);
 
         _.each(countySummaryJSON.MunicipalityList, function (municipalitySummaryJSON) {
             var municipality = new Parse.Object('Municipality');
@@ -85,7 +85,7 @@ function importMunicipalities() {
             'Content-Type': 'application/json'
         }
     }).then(function (httpResponse) {
-        return countySummariesJSONToMunicipalities(httpResponse.data);
+        return countySummariesJSONToMunicipalities(httpResponse.data.CountyList);
     }).then(function (newMunicipalities) {
         return createOrUpdateMunicipalities(newMunicipalities);
     }).then(function (counties) {
