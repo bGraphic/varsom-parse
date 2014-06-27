@@ -11,20 +11,9 @@ function saveAll(objects) {
     Parse.Object.saveAll(objects, function (list, error) {
 
       if(error) {
-        var objectLength = -1;
-        var listLength = -1;
-        var errorLength = -1;
-
-        if(objects)
-          objectLength = objects.length
-        if(list)
-          objectLength = list.length
-        if(error)
-          objectLength = error.length
-
-        console.error("Objects (" + objectLength + "): " + JSON.stringify(objects));
-        console.error("List(" + listLength + "): " + JSON.stringify(list));
-        console.error("Error(" + errorLength + "): " + JSON.stringify(error));
+        console.error("Save all failed for county: " + objects[0].get('countyId'));
+        console.error("Objects (" + _.size(objects) + "): " + JSON.stringify(objects));
+        console.error("Error(" + _.size(error) + "): " + JSON.stringify(error));
       }
 
       list ? promise.resolve(list) : promise.reject(error);

@@ -16,23 +16,24 @@ function api(url) {
         }
     });
 }
-                                   
+
 function fetch(url) {
     var promise = new Parse.Promise();
-    
+
     api(url).then(function(result) {
         promise.resolve(result.data);
     }, function (error) {
+        console.error("API Error: " + JSON.stringify(error));
         promise.reject(error);
     });
-    
+
     return promise;
 }
 
 function fetchAvalancheWarnings() {
     return fetch(AVALANCHE_WARNING_API_URL);
 }
-    
+
 function fetchFloodWarnings() {
     return fetch(FLOOD_WARNING_API_URL);
 }
