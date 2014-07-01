@@ -108,7 +108,6 @@ function processWarningsForArea(area, newWarnings, warningType) {
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
     area.set(warningType + 'NewHighestForecastLevel', highestForecastLevel(area.get(warningType + 'Forecast')));
     if(!area.has(warningType + 'HighestForecastLevel')) {
-      console.log("Setting Highest level");
       area.set(warningType + 'HighestForecastLevel', area.get(warningType + 'NewHighestForecastLevel'));
     }
 

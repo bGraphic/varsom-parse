@@ -7,15 +7,15 @@ var _ = require('underscore'),
     moment = require('moment');
 
 function findHighestForecastLevel(area, warningType) {
-    return (area.has(warningType + 'HighestForecastLevel')) ? area.get(warningType + 'HighestForecastLevel') : "-1";
+    return (area.has(warningType + 'HighestForecastLevel')) ? area.get(warningType + 'HighestForecastLevel') : -1;
 }
 
 function findNewHighestForecastLevel(area, warningType) {
-    return (area.has(warningType + 'NewHighestForecastLevel')) ? area.get(warningType + 'NewHighestForecastLevel') : "-1";
+    return (area.has(warningType + 'NewHighestForecastLevel')) ? area.get(warningType + 'NewHighestForecastLevel') : -1;
 }
 
 function setCurrentToNewForecastLevel(area, warningType, newLevel) {
-  if(newLevel != "-1") {
+  if(newLevel != -1) {
       area.set(warningType + 'HighestForecastLevel', newLevel);
   }
 }
@@ -25,8 +25,8 @@ function unsetNewForcastLevel(area, warningType) {
 }
 
 function highestForecastLevelHasChanged(currentLevel, newLevel) {
-    return newLevel != "-1"
-        && currentLevel != "-1"
+    return newLevel != -1
+        && currentLevel != -1
         && newLevel != currentLevel;
 }
 

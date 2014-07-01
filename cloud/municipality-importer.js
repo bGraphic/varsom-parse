@@ -20,7 +20,6 @@ function nameFixer(name) {
 function updateMunicipalityWithJSON(municipality, municipalityJSON) {
 
     municipality.set('municipalityId', municipalityJSON.Id);
-    municipality.set('countyId', municipalityJSON.WarningList[0].CountyList[0].Id);
     municipality.set('name', nameFixer(municipalityJSON.Name));
 
     return municipality;
@@ -69,6 +68,7 @@ function countySummariesJSONToMunicipalities(countySummariesJSON) {
 
         _.each(countySummaryJSON.MunicipalityList, function (municipalitySummaryJSON) {
             var municipality = new Parse.Object('Municipality');
+            municipality.set('countyId', countySummaryJSON.Id);
             municipalities.push(updateMunicipalityWithJSON(municipality, municipalitySummaryJSON));
         });
 

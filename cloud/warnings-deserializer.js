@@ -45,7 +45,7 @@ function deserializeWarning(warningJSON, warningType) {
 
     if (warningType === "LandSlideWarning" || warningType === "FloodWarning") {
 
-      warning.set('activityLevel', warningJSON.ActivityLevel);
+      warning.set('activityLevel', parseInt(warningJSON.ActivityLevel));
 
       if(warningJSON.WarningText)
         warning.set('warningText', warningJSON.WarningText.trim());
@@ -63,7 +63,7 @@ function deserializeWarning(warningJSON, warningType) {
 
     if(warningType === "AvalancheWarning") {
 
-      warning.set('dangerLevel', warningJSON.DangerLevel);
+      warning.set('dangerLevel', parseInt(warningJSON.DangerLevel));
 
       if(warningJSON.AvalancheWarning)
         warning.set('avalancheWarning', warningJSON.AvalancheWarning.trim());
