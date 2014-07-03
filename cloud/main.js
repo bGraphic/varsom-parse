@@ -5,3 +5,4 @@
 
 require('cloud/area.js');
 require('cloud/jobs.js');
+require('cloud/app-version.js');
