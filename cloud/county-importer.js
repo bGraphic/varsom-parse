@@ -36,6 +36,8 @@ function createOrUpdateCounties(newCounties) {
                 county = updateCounty(county, newCounty);
             }
 
+            console.log("Update/create county: " + county.get('countyId'));
+
             promises.push(county.save());
 
         });

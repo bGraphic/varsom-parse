@@ -14,56 +14,6 @@ function parseIdListJSONToArray(listJSON) {
     });
 }
 
-function deserializeWarning(warningJSON, warningType) {
-    var warning = new Parse.Object(warningType);
-    var timezone = "Europe/Oslo";
-
-    warning.set('validFrom', moment.tz(warningJSON.ValidFrom, timezone).toDate());
-    warning.set('validTo', moment.tz(warningJSON.ValidTo, timezone).toDate());
-
-    warning.set('publishTime', moment.tz(warningJSON.PublishTime, timezone).toDate());
-    warning.set('nextWarningTime', moment.tz(warningJSON.NextWarningTime, timezone).toDate());
-
-    if(warningJSON.MainText)
-      warning.set('mainText', warningJSON.MainText.trim());
-
-    if (warningType === "LandSlideWarning" || warningType === "FloodWarning") {
-
-      warning.set('previousActivityLevel', '-1');
-      warning.set('activityLevel', warningJSON.ActivityLevel);
-
-      if(warningJSON.WarningText)
-        warning.set('warningText', warningJSON.WarningText.trim());
-
-      warning.set('exposedHeightType', warningJSON.ExposedHeightType);
-      warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
-
-      warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
-    }
-
-    if (warningType === "LandSlideWarning") {
-
-      warning.set('typeList', parseIdListJSONToArray(warningJSON.LandSlideTypeList));
-    }
-
-    if(warningType === "AvalancheWarning") {
-
-      warning.set('previousDangerLevel', '-1');
-      warning.set('dangerLevel', warningJSON.DangerLevel);
-
-      if(warningJSON.AvalancheWarning)
-        warning.set('avalancheWarning', warningJSON.AvalancheWarning.trim());
-      if(warningJSON.AvalancheDanger)
-        warning.set('avalancheDanger', warningJSON.AvalancheDanger.trim());
-      if(warningJSON.AlpineWeather)
-        warning.set('alpineWeather', warningJSON.AlpineWeather.trim());
-
-      warning.set('avalancheProblems', deserializeAvalancheProblems(warningJSON.AvalancheProblems));
-    }
-
-    return warning;
-}
-
 function deserializeAvalancheProblems(avalancheProblemsJSON) {
     return _.map(avalancheProblemsJSON, function (problemJSON) {
         return {
@@ -80,14 +30,60 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
     });
 }
 
+function deserializeWarning(warningJSON, warningType) {
+    var warning = new Parse.Object(warningType);
+    var timezone = "Europe/Oslo";
+
+    warning.set('validFrom', moment.tz(warningJSON.ValidFrom, timezone).toDate());
+    warning.set('validTo', moment.tz(warningJSON.ValidTo, timezone).toDate());
+
+    warning.set('publishTime', moment.tz(warningJSON.PublishTime, timezone).toDate());
+    warning.set('nextWarningTime', moment.tz(warningJSON.NextWarningTime, timezone).toDate());
+
+    if(warningJSON.MainText)
+      warning.set('mainText', {no: warningJSON.MainText.trim()});
+
+    if (warningType === "LandSlideWarning" || warningType === "FloodWarning") {
+
+      warning.set('activityLevel', parseInt(warningJSON.ActivityLevel));
+
+      if(warningJSON.WarningText)
+        warning.set('warningText', {no: warningJSON.WarningText.trim()});
+
+      warning.set('exposedHeightType', warningJSON.ExposedHeightType);
+      warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
+
+      warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
+    }
+
+    if (warningType === "LandSlideWarning") {
+
+      warning.set('typeList', parseIdListJSONToArray(warningJSON.LandSlideTypeList));
+    }
+
+    if(warningType === "AvalancheWarning") {
+
+      warning.set('dangerLevel', parseInt(warningJSON.DangerLevel));
+
+      if(warningJSON.AvalancheWarning)
+        warning.set('avalancheWarning', {no: warningJSON.AvalancheWarning.trim()});
+      if(warningJSON.AvalancheDanger)
+        warning.set('avalancheDanger', {no: warningJSON.AvalancheDanger.trim()});
+      if(warningJSON.AlpineWeather)
+        warning.set('alpineWeather', {no: warningJSON.AlpineWeather.trim()});
+
+      warning.set('avalancheProblems', deserializeAvalancheProblems(warningJSON.AvalancheProblems));
+    }
+
+    return warning;
+}
+
 function updateCountyForecastWithMunicipalityForecast(countyForecast, municipalityForecast) {
     _.each(municipalityForecast, function (warning, i) {
-        var countyWarning = warning.clone();
-        countyWarning.set("municipalityId", null);
         if (i > countyForecast.length - 1) {
-            countyForecast.push(countyWarning);
+            countyForecast.push(warning);
         } else if (warning.get("activityLevel") > countyForecast[i].get("activityLevel")) {
-            countyForecast[i] = countyWarning;
+            countyForecast[i] = warning;
         }
     });
     return countyForecast;
@@ -96,7 +92,7 @@ function updateCountyForecastWithMunicipalityForecast(countyForecast, municipali
 function deserializeWarnings(countyOverViewJSON, processors, warningType) {
     var promises = [];
 
-    _.each(countyOverViewJSON, function (countyJSON) {
+    _.each(countyOverViewJSON.CountyList, function (countyJSON) {
         var countyId = countyJSON.Id,
             countyForecast = [],
             municipalityForecasts = {};

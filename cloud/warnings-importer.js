@@ -16,6 +16,7 @@ function importFloodWarnings() {
         });
     }).then(function () {
         console.log('Finished importing flood warnings');
+        return Parse.Promise.as();
     }, function (error) {
         console.error("Flood: import failed - " + JSON.stringify(error));
         if (error.code === 100) {
@@ -23,7 +24,7 @@ function importFloodWarnings() {
             return importFloodWarnings();
         } else {
             console.log("Flood: do not try again");
-            return Parse.Promise.as();
+            return Parse.Promise.error(error);
         }
     });
 }
@@ -37,6 +38,7 @@ function importLandSlideWarnings() {
         });
     }).then(function () {
         console.log('Finished importing landslide warnings');
+        return Parse.Promise.as();
     }, function (error) {
         console.error("Landslide: import failed - " + JSON.stringify(error));
         if (error.code === 100) {
@@ -44,7 +46,7 @@ function importLandSlideWarnings() {
             return importLandSlideWarnings();
         } else {
             console.log("Landslide: do not try again");
-            return Parse.Promise.as();
+            return Parse.Promise.error(error);
         }
     });
 }
@@ -52,11 +54,12 @@ function importLandSlideWarnings() {
 function importAvalancheWarnings() {
     return apiHandler.fetchAvalancheWarnings().then(function (json) {
         console.log("Avalanche: json fetched");
-        return deserializer.deserializeAvalancheWarnings(json, 
+        return deserializer.deserializeAvalancheWarnings(json,
             processor.processAvalancheWarningsForRegion
         );
     }).then(function () {
         console.log("Avalanche: json imported");
+        return Parse.Promise.as();
     }, function (error) {
         console.error("Avalanche: import failed - " + JSON.stringify(error));
         if (error.code === 100) {
@@ -64,7 +67,7 @@ function importAvalancheWarnings() {
             return importLandSlideWarnings();
         } else {
             console.log("Avalanche: do not try again");
-            return Parse.Promise.as();
+            return Parse.Promise.error(error);
         }
     });
 }
