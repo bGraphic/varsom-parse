@@ -41,14 +41,14 @@ function deserializeWarning(warningJSON, warningType) {
     warning.set('nextWarningTime', moment.tz(warningJSON.NextWarningTime, timezone).toDate());
 
     if(warningJSON.MainText)
-      warning.set('mainText', warningJSON.MainText.trim());
+      warning.set('mainText', {no: warningJSON.MainText.trim()});
 
     if (warningType === "LandSlideWarning" || warningType === "FloodWarning") {
 
       warning.set('activityLevel', parseInt(warningJSON.ActivityLevel));
 
       if(warningJSON.WarningText)
-        warning.set('warningText', warningJSON.WarningText.trim());
+        warning.set('warningText', {no: warningJSON.WarningText.trim()});
 
       warning.set('exposedHeightType', warningJSON.ExposedHeightType);
       warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
@@ -66,11 +66,11 @@ function deserializeWarning(warningJSON, warningType) {
       warning.set('dangerLevel', parseInt(warningJSON.DangerLevel));
 
       if(warningJSON.AvalancheWarning)
-        warning.set('avalancheWarning', warningJSON.AvalancheWarning.trim());
+        warning.set('avalancheWarning', {no: warningJSON.AvalancheWarning.trim()});
       if(warningJSON.AvalancheDanger)
-        warning.set('avalancheDanger', warningJSON.AvalancheDanger.trim());
+        warning.set('avalancheDanger', {no: warningJSON.AvalancheDanger.trim()});
       if(warningJSON.AlpineWeather)
-        warning.set('alpineWeather', warningJSON.AlpineWeather.trim());
+        warning.set('alpineWeather', {no: warningJSON.AlpineWeather.trim()});
 
       warning.set('avalancheProblems', deserializeAvalancheProblems(warningJSON.AvalancheProblems));
     }
