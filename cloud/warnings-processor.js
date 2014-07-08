@@ -6,20 +6,13 @@
 var _ = require('underscore');
 
 function saveAll(objects) {
-    var promise = new Parse.Promise();
-
-    Parse.Object.saveAll(objects, function (list, error) {
-
-      if(error) {
-        console.error("Save all failed for county: " + objects[0].get('countyId'));
-        console.error("Objects (" + _.size(objects) + "): " + JSON.stringify(objects));
-        console.error("Error(" + _.size(error) + "): " + JSON.stringify(error));
-      }
-
-      list ? promise.resolve(list) : promise.reject(error);
+  
+    var promises = [];
+    _.each(objects, function(object) {
+        promises.push(object.save());
     });
 
-    return promise;
+    return Parse.Promise.when(promises)
 }
 
 function updateWarningWithWarning(warning, newWarning) {
@@ -145,7 +138,7 @@ function processWarningsForMunicipality(municipalityWarnings, warningType) {
             municpalitySaveList.push(updatedMunicipality);
         });
 
-        return saveAll(municpalitySaveList);
+        return saveAllBatches(municpalitySaveList);
     });
 }
 
