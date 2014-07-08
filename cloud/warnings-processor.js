@@ -6,7 +6,7 @@
 var _ = require('underscore');
 
 function saveAll(objects) {
-  
+
     var promises = [];
     _.each(objects, function(object) {
         promises.push(object.save());
@@ -138,7 +138,7 @@ function processWarningsForMunicipality(municipalityWarnings, warningType) {
             municpalitySaveList.push(updatedMunicipality);
         });
 
-        return saveAllBatches(municpalitySaveList);
+        return saveAll(municpalitySaveList);
     });
 }
 
