@@ -88,6 +88,38 @@ function pushHighestForecastLevelUpdate(area, warningType) {
     }
 }
 
+function pushHighestPriorityAvalancheProblemHasChangedUpdate(area) {
+    if (area.get("highestPriorityAvalancheProblemHasChanged")) {
+
+        return Parse.Push.send({
+          expiration_interval: 43200, //12 hours
+          where: pushQueryForAreaClassnameAndId(area.className, areaIDForArea(area)),
+          data: {
+              alert: {
+                  "loc-key": "AvalancheWarning problem changed",
+                  "loc-args": [
+                      area.get("name")
+                  ]
+              },
+              warningType: "AvalancheWarning",
+              areaType: ""+area.className,
+              areaId: ""+areaIDForArea(area),
+              parentId: ""+parentIDForArea(area)
+          }
+      }).then(function () {
+          area.set("highestPriorityAvalancheProblemHasChanged", false);
+          return area.save();
+      }, function (error) {
+          console.error("Error pushing warning: " + JSON.stringify(error));
+          return Parse.Promise.as();
+      });
+
+    } else {
+        return Parse.Promise.as();
+    }
+}
+
 module.exports = {
-    pushHighestForecastLevelUpdate: pushHighestForecastLevelUpdate
+    pushHighestForecastLevelUpdate: pushHighestForecastLevelUpdate,
+    pushHighestPriorityAvalancheProblemHasChangedUpdate: pushHighestPriorityAvalancheProblemHasChangedUpdate
 };

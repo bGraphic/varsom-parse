@@ -19,6 +19,7 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
         return {
             extId: problemJSON.AvalancheExtId,
             causeId: problemJSON.AvalCauseId,
+            problemId: problemJSON.AvalancheProblemId,
             triggerSimpleId: problemJSON.AvalTriggerSimpleId,
             destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
             probabilityId: problemJSON.AvalProbabilityId,
@@ -27,6 +28,8 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
             exposedHeight2: problemJSON.ExposedHeight2,
             validExpositions: problemJSON.ValidExpositions
         };
+    }).sort(function (a, b) {
+      return a.causeId < b.causeId
     });
 }
 
@@ -72,7 +75,8 @@ function deserializeWarning(warningJSON, warningType) {
       if(warningJSON.AlpineWeather)
         warning.set('alpineWeather', {no: warningJSON.AlpineWeather.trim()});
 
-      warning.set('avalancheProblems', deserializeAvalancheProblems(warningJSON.AvalancheProblems));
+      var avalancheProblems = deserializeAvalancheProblems(warningJSON.AvalancheProblems)
+      warning.set('avalancheProblems', avalancheProblems);
     }
 
     return warning;

@@ -28,6 +28,7 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('avalancheDanger',      newWarning.get('avalancheDanger'));
         warning.set('alpineWeather',        newWarning.get('alpineWeather'));
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
+        warning.set('highestPriorityAvalancheProblem', newWarning.get('highestPriorityAvalancheProblem'));
 
     } else {
 
@@ -96,8 +97,28 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
+function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
+    var hasChanged = _.find(newForecast, function (newWarning) {
+        var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        return existingWarning
+          && existingWarning.get('avalancheProblems').length > 0
+          && newWarning.get('avalancheProblems').length > 0
+          && (existingWarning.get('avalancheProblems')[0].causeId
+              != newWarning.get('avalancheProblems')[0].causeId);
+    });
+
+    return hasChanged !== undefined;
+}
+
 function processWarningsForArea(area, newWarnings, warningType) {
     var currentWarnings = area.get(warningType + 'Forecast');
+
+    // Do this before updating current forecast
+    if (warningType === 'AvalancheWarning') {
+      area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
+    }
+
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
     area.set(warningType + 'NewHighestForecastLevel', highestForecastLevel(area.get(warningType + 'Forecast')));
     if(!area.has(warningType + 'HighestForecastLevel')) {
