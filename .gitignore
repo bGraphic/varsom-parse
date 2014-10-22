@@ -1,6 +1,5 @@
 #project
 config/global.json
-cloud/config.js
 node_modules/
 
 # Mac files
