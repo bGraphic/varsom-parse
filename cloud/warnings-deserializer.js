@@ -17,9 +17,9 @@ function parseIdListJSONToArray(listJSON) {
 function deserializeAvalancheProblems(avalancheProblemsJSON) {
     return _.map(avalancheProblemsJSON, function (problemJSON) {
         return {
+            problemId: problemJSON.AvalancheProblemId,          // Sort order for avalanche problems
             extId: problemJSON.AvalancheExtId,
             causeId: problemJSON.AvalCauseId,
-            problemId: problemJSON.AvalancheProblemId,
             triggerSimpleId: problemJSON.AvalTriggerSimpleId,
             destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
             probabilityId: problemJSON.AvalProbabilityId,
@@ -29,7 +29,7 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
             validExpositions: problemJSON.ValidExpositions
         };
     }).sort(function (a, b) {
-      return a.causeId < b.causeId
+      return a.problemId < b.problemId
     });
 }
 
