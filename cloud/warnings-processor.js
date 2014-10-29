@@ -100,9 +100,9 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
-function avalancheProblemHasChanged(existingWarning, newWarning) {
-  return existingWarning.causeId !== newWarning.causeId
-    || existingWarning.extId !== newWarning.extId;
+function avalancheProblemHasChanged(existingProblem, newProblem) {
+  return existingProblem.causeId !== newProblem.causeId
+    || existingProblem.extId !== newWarning.extId;
 }
 
 function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
@@ -121,20 +121,38 @@ function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast)
 }
 
 function microBlogPostsHaveChanged(currentForecast, newForecast) {
-  var hasChanged = _.find(newForecast, function (newWarning) {
-    var existingWarning = findWarningInForecast(newWarning, currentForecast);
-    var existingWarningMicroBlogPosts = existingWarning.get('microBlogPosts');
-    var newWarningMicroBlogPosts = newWarning.get('microBlogPosts');
 
-    return !existingWarning
-        || (
-          (existingWarningMicroBlogPosts.length > 0 && newWarningMicroBlogPosts.length === 0)
-          || (
-            (existingWarningMicroBlogPosts.length > 0 && newWarningMicroBlogPosts.length > 0)
-            && (existingWarningMicroBlogPosts[0].dateTime > newWarningMicroBlogPosts[0].dateTime)
-        )
-      );
-  });
+    function warningHasMicroBlogPosts(warning) {
+      if(!warning)
+        return false;
+
+      var warningMicroBlogPosts = warning.get('microBlogPosts');
+      return warningMicroBlogPosts && warningMicroBlogPosts.length > 0
+    }
+
+    function onlyNewWarningHasMicroBlogPosts(existingWarning, newWarning) {
+      return !warningHasMicroBlogPosts(existingWarning) && warningHasMicroBlogPosts(newWarning)
+    }
+
+    function newWarningHasNewerMicroBlogPostsThanExistingWarning(existingWarning, newWarning) {
+      if(!warningHasMicroBlogPosts(existingWarning) || !warningHasMicroBlogPosts(newWarning))
+        return false;
+
+      var newWarningMicroBlogPosts = newWarning.get('microBlogPosts');
+      var existingWarningMicroBlogPosts = existingWarning.get('microBlogPosts');
+
+      return newWarningMicroBlogPosts[0].dateTime > existingWarningMicroBlogPosts[0].dateTime;
+    }
+
+    var hasChanged = _.find(newForecast, function (newWarning) {
+        var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        return onlyNewWarningHasMicroBlogPosts(existingWarning, newWarning)
+            || newWarningHasNewerMicroBlogPostsThanExistingWarning(existingWarning, newWarning);
+    });
+
+    return hasChanged !== undefined;
+
 }
 
 function processWarningsForArea(area, newWarnings, warningType) {
