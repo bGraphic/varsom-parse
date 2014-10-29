@@ -97,6 +97,11 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
+function avalancheProblemHasChanged(existing, new) {
+  return existing.causeId !== new.causeId
+    || existing.extId !== new.extId;
+}
+
 function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
     var hasChanged = _.find(newForecast, function (newWarning) {
         var existingWarning = findWarningInForecast(newWarning, currentForecast);
@@ -106,12 +111,7 @@ function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast)
         return existingWarning
           && existingWarningAvalancheProblems.length > 0
           && newWarningAvalancheProblems.length > 0
-          && (
-            (existingWarningAvalancheProblems[0].causeId
-              != newWarningAvalancheProblems[0].causeId)
-            || (existingWarningAvalancheProblems[0].extId
-              != newWarningAvalancheProblems[0].extId)
-            );
+          && avalancheProblemHasChanged(existingWarningAvalancheProblems[0], newWarningAvalancheProblems[0]);
     });
 
     return hasChanged !== undefined;
