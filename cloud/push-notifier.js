@@ -119,7 +119,39 @@ function pushHighestPriorityAvalancheProblemHasChangedUpdate(area) {
     }
 }
 
+function pushMicroBlogPostsUpdate(area, warningType) {
+    if (area.get(warningType + "microBlogPostsHaveChanged")) {
+
+        return Parse.Push.send({
+          expiration_interval: 43200, //12 hours
+          where: pushQueryForAreaClassnameAndId(area.className, areaIDForArea(area)),
+          data: {
+              alert: {
+                  "loc-key": warningType + " MicroBlogPosts have changed",
+                  "loc-args": [
+                      area.get("name")
+                  ]
+              },
+              warningType: warningType,
+              areaType: ""+area.className,
+              areaId: ""+areaIDForArea(area),
+              parentId: ""+parentIDForArea(area)
+          }
+      }).then(function () {
+          area.set(warningType + "microBlogPostsHaveChanged", false);
+          return area.save();
+      }, function (error) {
+          console.error("Error pushing microBlogPostsHaveChanged: " + JSON.stringify(error));
+          return Parse.Promise.as();
+      });
+
+    } else {
+        return Parse.Promise.as();
+    }
+}
+
 module.exports = {
     pushHighestForecastLevelUpdate: pushHighestForecastLevelUpdate,
-    pushHighestPriorityAvalancheProblemHasChangedUpdate: pushHighestPriorityAvalancheProblemHasChangedUpdate
+    pushHighestPriorityAvalancheProblemHasChangedUpdate: pushHighestPriorityAvalancheProblemHasChangedUpdate,
+    pushMicroBlogPostsUpdate: pushMicroBlogPostsUpdate
 };

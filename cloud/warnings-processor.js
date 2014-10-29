@@ -144,7 +144,7 @@ function processWarningsForArea(area, newWarnings, warningType) {
     if (warningType === 'AvalancheWarning') {
       area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
     } else {
-      area.set("microBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
+      area.set(warningType + "microBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
     }
 
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
