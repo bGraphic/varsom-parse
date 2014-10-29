@@ -120,7 +120,7 @@ function pushHighestPriorityAvalancheProblemHasChangedUpdate(area) {
 }
 
 function pushMicroBlogPostsUpdate(area, warningType) {
-    if (area.get(warningType + "microBlogPostsHaveChanged")) {
+    if (area.get(warningType + "MicroBlogPostsHaveChanged")) {
 
         return Parse.Push.send({
           expiration_interval: 43200, //12 hours
@@ -138,7 +138,7 @@ function pushMicroBlogPostsUpdate(area, warningType) {
               parentId: ""+parentIDForArea(area)
           }
       }).then(function () {
-          area.set(warningType + "microBlogPostsHaveChanged", false);
+          area.set(warningType + "MicroBlogPostsHaveChanged", false);
           return area.save();
       }, function (error) {
           console.error("Error pushing microBlogPostsHaveChanged: " + JSON.stringify(error));
