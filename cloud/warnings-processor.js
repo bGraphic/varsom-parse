@@ -120,12 +120,31 @@ function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast)
     return hasChanged !== undefined;
 }
 
+function microBlogPostsHaveChanged(currentForecast, newForecast) {
+  var hasChanged = _.find(newForecast, function (newWarning) {
+    var existingWarning = findWarningInForecast(newWarning, currentForecast);
+    var existingWarningMicroBlogPosts = existingWarning.get('microBlogPosts');
+    var newWarningMicroBlogPosts = newWarning.get('microBlogPosts');
+
+    return !existingWarning
+        || (
+          (existingWarningMicroBlogPosts.length > 0 && newWarningMicroBlogPosts.length === 0)
+          || (
+            (existingWarningMicroBlogPosts.length > 0 && newWarningMicroBlogPosts.length > 0)
+            && (existingWarningMicroBlogPosts[0].dateTime > newWarningMicroBlogPosts[0].dateTime)
+        )
+      );
+  });
+}
+
 function processWarningsForArea(area, newWarnings, warningType) {
     var currentWarnings = area.get(warningType + 'Forecast');
 
     // Do this before updating current forecast
     if (warningType === 'AvalancheWarning') {
       area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
+    } else {
+      area.set("microBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
     }
 
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
