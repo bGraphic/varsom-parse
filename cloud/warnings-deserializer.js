@@ -17,6 +17,7 @@ function parseIdListJSONToArray(listJSON) {
 function deserializeAvalancheProblems(avalancheProblemsJSON) {
     return _.map(avalancheProblemsJSON, function (problemJSON) {
         return {
+            problemId: problemJSON.AvalancheProblemId,          // Sort order for avalanche problems
             extId: problemJSON.AvalancheExtId,
             causeId: problemJSON.AvalCauseId,
             triggerSimpleId: problemJSON.AvalTriggerSimpleId,
@@ -27,6 +28,8 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
             exposedHeight2: problemJSON.ExposedHeight2,
             validExpositions: problemJSON.ValidExpositions
         };
+    }).sort(function (a, b) {
+      return a.problemId < b.problemId
     });
 }
 
@@ -85,7 +88,8 @@ function deserializeWarning(warningJSON, warningType) {
       if(warningJSON.AlpineWeather)
         warning.set('alpineWeather', {no: warningJSON.AlpineWeather.trim()});
 
-      warning.set('avalancheProblems', deserializeAvalancheProblems(warningJSON.AvalancheProblems));
+      var avalancheProblems = deserializeAvalancheProblems(warningJSON.AvalancheProblems)
+      warning.set('avalancheProblems', avalancheProblems);
     }
 
     return warning;

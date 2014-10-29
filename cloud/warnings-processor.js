@@ -29,6 +29,7 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('avalancheDanger',      newWarning.get('avalancheDanger'));
         warning.set('alpineWeather',        newWarning.get('alpineWeather'));
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
+        warning.set('highestPriorityAvalancheProblem', newWarning.get('highestPriorityAvalancheProblem'));
 
     } else {
         // Is flood or landslide warning
@@ -99,8 +100,34 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
+function avalancheProblemHasChanged(existing, new) {
+  return existing.causeId !== new.causeId
+    || existing.extId !== new.extId;
+}
+
+function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
+    var hasChanged = _.find(newForecast, function (newWarning) {
+        var existingWarning = findWarningInForecast(newWarning, currentForecast);
+        var existingWarningAvalancheProblems = existingWarning.get('avalancheProblems');
+        var newWarningAvalancheProblems = newWarning.get('avalancheProblems');
+
+        return existingWarning
+          && existingWarningAvalancheProblems.length > 0
+          && newWarningAvalancheProblems.length > 0
+          && avalancheProblemHasChanged(existingWarningAvalancheProblems[0], newWarningAvalancheProblems[0]);
+    });
+
+    return hasChanged !== undefined;
+}
+
 function processWarningsForArea(area, newWarnings, warningType) {
     var currentWarnings = area.get(warningType + 'Forecast');
+
+    // Do this before updating current forecast
+    if (warningType === 'AvalancheWarning') {
+      area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
+    }
+
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
     area.set(warningType + 'NewHighestForecastLevel', highestForecastLevel(area.get(warningType + 'Forecast')));
     if(!area.has(warningType + 'HighestForecastLevel')) {
