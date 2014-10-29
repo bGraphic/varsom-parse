@@ -26,7 +26,7 @@ Parse.Cloud.beforeSave('Municipality', function (request, response) {
         return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'LandSlideWarning');
     }).then(function() {
         return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'FloodWarning');
-    });
+    }).then(function () {
         return response.success();
     }, function(error) {
         return response.success();

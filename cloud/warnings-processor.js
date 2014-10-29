@@ -100,9 +100,9 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
-function avalancheProblemHasChanged(existing, new) {
-  return existing.causeId !== new.causeId
-    || existing.extId !== new.extId;
+function avalancheProblemHasChanged(existingWarning, newWarning) {
+  return existingWarning.causeId !== newWarning.causeId
+    || existingWarning.extId !== newWarning.extId;
 }
 
 function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
