@@ -33,6 +33,17 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
     });
 }
 
+function deserializeMicroBlogPosts(microBlogPostsJSON) {
+    return _.map(microBlogPostsJSON, function (microBlogPostJSON) {
+        return {
+            dateTime: microBlogPostJSON.DateTime,
+            text: microBlogPostJSON.Text
+        };
+    }).sort(function (a, b) {
+        return a.dateTime > b.dateTime;
+    });
+}
+
 function deserializeWarning(warningJSON, warningType) {
     var warning = new Parse.Object(warningType);
     var timezone = "Europe/Oslo";
@@ -57,6 +68,8 @@ function deserializeWarning(warningJSON, warningType) {
       warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
 
       warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
+
+      warning.set('microBlogPosts', deserializeMicroBlogPosts(warningJSON.MicroBlogPosts));
     }
 
     if (warningType === "LandSlideWarning") {

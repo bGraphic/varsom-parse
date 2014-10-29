@@ -21,6 +21,7 @@ function updateWarningWithWarning(warning, newWarning) {
     warning.set('nextWarningTime',  newWarning.get('nextWarningTime'));
 
     if (newWarning.has('regionId')) {
+        // Is avalanche warning
 
         warning.set('dangerLevel',          newWarning.get('dangerLevel'));
         warning.set('mainText',             newWarning.get('mainText'));
@@ -31,6 +32,7 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('highestPriorityAvalancheProblem', newWarning.get('highestPriorityAvalancheProblem'));
 
     } else {
+        // Is flood or landslide warning
 
         warning.set('municipalityId',           newWarning.get('municipalityId'));
         warning.set('activityLevel',            newWarning.get('activityLevel'));
@@ -39,6 +41,7 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('exposedHeightType',        newWarning.get('exposedHeightType'));
         warning.set('exposedHeightValue',       newWarning.get('exposedHeightValue'));
         warning.set('causeList',                newWarning.get('causeList'));
+        warning.set('microBlogPosts',        newWarning.get('microBlogPosts'));
 
         if (newWarning.has('typeList')) {
             warning.set('typeList', newWarning.get('typeList'));
