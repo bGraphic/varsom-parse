@@ -20,13 +20,19 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
             problemId: problemJSON.AvalancheProblemId,          // Sort order for avalanche problems
             extId: problemJSON.AvalancheExtId,
             causeId: problemJSON.AvalCauseId,
+            probabilityId: problemJSON.AvalProbabilityId,
             triggerSimpleId: problemJSON.AvalTriggerSimpleId,
             destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
-            probabilityId: problemJSON.AvalProbabilityId,
-            exposedHeightFill: problemJSON.ExposedHeightFill,
+            propagationId: problemJSON.AvalPropagationId,
+            advice: problemJSON.AvalancheAdvice,
+            typeId: problemJSON.AvalancheTypeId,
+            problemTypeId: problemJSON.AvalancheProblemTypeId,
+
+            validExpositions: problemJSON.ValidExpositions,
+
             exposedHeight1: problemJSON.ExposedHeight1,
             exposedHeight2: problemJSON.ExposedHeight2,
-            validExpositions: problemJSON.ValidExpositions
+            exposedHeightFill: problemJSON.ExposedHeightFill
         };
     }).sort(function (a, b) {
       return a.problemId < b.problemId
