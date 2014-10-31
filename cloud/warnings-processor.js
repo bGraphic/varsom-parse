@@ -106,15 +106,19 @@ function avalancheProblemHasChanged(existingProblem, newProblem) {
 }
 
 function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
+
     var hasChanged = _.find(newForecast, function (newWarning) {
         var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        if(!existingWarning)
+          return false;
+
         var existingWarningAvalancheProblems = existingWarning.get('avalancheProblems');
         var newWarningAvalancheProblems = newWarning.get('avalancheProblems');
 
-        return existingWarning
-          && existingWarningAvalancheProblems.length > 0
-          && newWarningAvalancheProblems.length > 0
-          && avalancheProblemHasChanged(existingWarningAvalancheProblems[0], newWarningAvalancheProblems[0]);
+        return existingWarningAvalancheProblems.length > 0
+                && newWarningAvalancheProblems.length > 0
+                && avalancheProblemHasChanged(existingWarningAvalancheProblems[0], newWarningAvalancheProblems[0]);
     });
 
     return hasChanged !== undefined;
