@@ -108,6 +108,10 @@ function avalancheProblemHasChanged(existingProblem, newProblem) {
 function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
     var hasChanged = _.find(newForecast, function (newWarning) {
         var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        if (!existingWarning) {
+          return false;
+        }
         var existingWarningAvalancheProblems = existingWarning.get('avalancheProblems');
         var newWarningAvalancheProblems = newWarning.get('avalancheProblems');
 
@@ -162,7 +166,7 @@ function processWarningsForArea(area, newWarnings, warningType) {
     if (warningType === 'AvalancheWarning') {
       area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
     } else {
-      area.set(warningType + "microBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
+      area.set(warningType + "MicroBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
     }
 
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
