@@ -100,21 +100,25 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
-function avalancheProblemHasChanged(existing, new) {
-  return existing.causeId !== new.causeId
-    || existing.extId !== new.extId;
+function avalancheProblemHasChanged(existingProblem, newProblem) {
+  return existingProblem.causeId !== newProblem.causeId
+    || existingProblem.extId !== newProblem.extId;
 }
 
 function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
+
     var hasChanged = _.find(newForecast, function (newWarning) {
         var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        if(!existingWarning)
+          return false;
+
         var existingWarningAvalancheProblems = existingWarning.get('avalancheProblems');
         var newWarningAvalancheProblems = newWarning.get('avalancheProblems');
 
-        return existingWarning
-          && existingWarningAvalancheProblems.length > 0
-          && newWarningAvalancheProblems.length > 0
-          && avalancheProblemHasChanged(existingWarningAvalancheProblems[0], newWarningAvalancheProblems[0]);
+        return existingWarningAvalancheProblems.length > 0
+                && newWarningAvalancheProblems.length > 0
+                && avalancheProblemHasChanged(existingWarningAvalancheProblems[0], newWarningAvalancheProblems[0]);
     });
 
     return hasChanged !== undefined;
