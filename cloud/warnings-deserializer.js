@@ -75,7 +75,7 @@ function deserializeWarning(warningJSON, warningType) {
 
       warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
 
-      warning.set('microBlogPosts', deserializeMicroBlogPosts(warningJSON.MicroBlogPosts));
+      warning.set('microBlogPosts', deserializeMicroBlogPosts(warningJSON.MicroBlogPostList));
     }
 
     if (warningType === "LandSlideWarning") {
