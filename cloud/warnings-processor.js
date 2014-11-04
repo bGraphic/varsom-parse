@@ -167,7 +167,7 @@ function processWarningsForArea(area, newWarnings, warningType) {
     // Do this before updating current forecast
     if (warningType === 'AvalancheWarning') {
       area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
-    } else {
+    } else if(area.has("municipalityId")) {
       area.set(warningType + "MicroBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
     }
 

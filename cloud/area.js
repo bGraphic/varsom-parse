@@ -9,10 +9,6 @@ Parse.Cloud.beforeSave('County', function (request, response) {
     pushNotifier.pushHighestForecastLevelUpdate(request.object, 'LandSlideWarning').then(function() {
         return pushNotifier.pushHighestForecastLevelUpdate(request.object, 'FloodWarning');
     }).then(function() {
-        return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'LandSlideWarning');
-    }).then(function() {
-        return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'FloodWarning');
-    }).then(function() {
         return response.success();
     }, function(error) {
         return response.success();
