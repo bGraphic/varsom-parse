@@ -139,12 +139,14 @@ function microBlogPostsHaveChanged(currentForecast, newForecast) {
     }
 
     function newWarningHasNewerMicroBlogPostsThanExistingWarning(existingWarning, newWarning) {
-      if(!warningHasMicroBlogPosts(existingWarning) || !warningHasMicroBlogPosts(newWarning))
+      if(!warningHasMicroBlogPosts(existingWarning) || !warningHasMicroBlogPosts(newWarning)) {
         return false;
+      }
 
       var newWarningMicroBlogPosts = newWarning.get('microBlogPosts');
       var existingWarningMicroBlogPosts = existingWarning.get('microBlogPosts');
 
+      // The micro blogposts are sorted in the deserializer
       return newWarningMicroBlogPosts[0].dateTime > existingWarningMicroBlogPosts[0].dateTime;
     }
 

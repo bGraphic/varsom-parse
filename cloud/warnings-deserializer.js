@@ -46,7 +46,7 @@ function deserializeMicroBlogPosts(microBlogPostsJSON) {
             text: microBlogPostJSON.Text
         };
     }).sort(function (a, b) {
-        return a.dateTime > b.dateTime;
+        return a.dateTime < b.dateTime;
     });
 }
 
