@@ -124,12 +124,51 @@ function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast)
     return hasChanged !== undefined;
 }
 
+function microBlogPostsHaveChanged(currentForecast, newForecast) {
+
+    function warningHasMicroBlogPosts(warning) {
+      if(!warning)
+        return false;
+
+      var warningMicroBlogPosts = warning.get('microBlogPosts');
+      return warningMicroBlogPosts && warningMicroBlogPosts.length > 0
+    }
+
+    function onlyNewWarningHasMicroBlogPosts(existingWarning, newWarning) {
+      return !warningHasMicroBlogPosts(existingWarning) && warningHasMicroBlogPosts(newWarning)
+    }
+
+    function newWarningHasNewerMicroBlogPostsThanExistingWarning(existingWarning, newWarning) {
+      if(!warningHasMicroBlogPosts(existingWarning) || !warningHasMicroBlogPosts(newWarning)) {
+        return false;
+      }
+
+      var newWarningMicroBlogPosts = newWarning.get('microBlogPosts');
+      var existingWarningMicroBlogPosts = existingWarning.get('microBlogPosts');
+
+      // The micro blogposts are sorted in the deserializer
+      return newWarningMicroBlogPosts[0].dateTime > existingWarningMicroBlogPosts[0].dateTime;
+    }
+
+    var hasChanged = _.find(newForecast, function (newWarning) {
+        var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        return onlyNewWarningHasMicroBlogPosts(existingWarning, newWarning)
+            || newWarningHasNewerMicroBlogPostsThanExistingWarning(existingWarning, newWarning);
+    });
+
+    return hasChanged !== undefined;
+
+}
+
 function processWarningsForArea(area, newWarnings, warningType) {
     var currentWarnings = area.get(warningType + 'Forecast');
 
     // Do this before updating current forecast
     if (warningType === 'AvalancheWarning') {
       area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
+    } else {
+      area.set(warningType + "MicroBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
     }
 
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
