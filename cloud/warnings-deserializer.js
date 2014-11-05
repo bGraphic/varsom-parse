@@ -35,7 +35,7 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
             exposedHeightFill: problemJSON.ExposedHeightFill
         };
     }).sort(function (a, b) {
-      return a.problemId < b.problemId
+      return a.problemId > b.problemId
     });
 }
 
