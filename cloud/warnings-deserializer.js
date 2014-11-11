@@ -17,16 +17,36 @@ function parseIdListJSONToArray(listJSON) {
 function deserializeAvalancheProblems(avalancheProblemsJSON) {
     return _.map(avalancheProblemsJSON, function (problemJSON) {
         return {
+            problemId: problemJSON.AvalancheProblemId,          // Sort order for avalanche problems
             extId: problemJSON.AvalancheExtId,
             causeId: problemJSON.AvalCauseId,
+            probabilityId: problemJSON.AvalProbabilityId,
             triggerSimpleId: problemJSON.AvalTriggerSimpleId,
             destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
-            probabilityId: problemJSON.AvalProbabilityId,
-            exposedHeightFill: problemJSON.ExposedHeightFill,
+            propagationId: problemJSON.AvalPropagationId,
+            advice: problemJSON.AvalancheAdvice,
+            typeId: problemJSON.AvalancheTypeId,
+            problemTypeId: problemJSON.AvalancheProblemTypeId,
+
+            validExpositions: problemJSON.ValidExpositions,
+
             exposedHeight1: problemJSON.ExposedHeight1,
             exposedHeight2: problemJSON.ExposedHeight2,
-            validExpositions: problemJSON.ValidExpositions
+            exposedHeightFill: problemJSON.ExposedHeightFill
         };
+    }).sort(function (a, b) {
+      return a.problemId > b.problemId
+    });
+}
+
+function deserializeMicroBlogPosts(microBlogPostsJSON) {
+    return _.map(microBlogPostsJSON, function (microBlogPostJSON) {
+        return {
+            dateTime: microBlogPostJSON.DateTime,
+            text: microBlogPostJSON.Text
+        };
+    }).sort(function (a, b) {
+        return a.dateTime < b.dateTime;
     });
 }
 
@@ -54,6 +74,8 @@ function deserializeWarning(warningJSON, warningType) {
       warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
 
       warning.set('causeList', parseIdListJSONToArray(warningJSON.CauseList));
+
+      warning.set('microBlogPosts', deserializeMicroBlogPosts(warningJSON.MicroBlogPostList));
     }
 
     if (warningType === "LandSlideWarning") {
@@ -72,7 +94,8 @@ function deserializeWarning(warningJSON, warningType) {
       if(warningJSON.AlpineWeather)
         warning.set('alpineWeather', {no: warningJSON.AlpineWeather.trim()});
 
-      warning.set('avalancheProblems', deserializeAvalancheProblems(warningJSON.AvalancheProblems));
+      var avalancheProblems = deserializeAvalancheProblems(warningJSON.AvalancheProblems)
+      warning.set('avalancheProblems', avalancheProblems);
     }
 
     return warning;
@@ -89,13 +112,16 @@ function updateCountyForecastWithMunicipalityForecast(countyForecast, municipali
     return countyForecast;
 }
 
-function deserializeWarnings(countyOverViewJSON, processors, warningType) {
+function deserializeWarnings(countyOverViewJSON, processors, warningType, countyLimit) {
     var promises = [];
 
-    _.each(countyOverViewJSON.CountyList, function (countyJSON) {
-        var countyId = countyJSON.Id,
-            countyForecast = [],
-            municipalityForecasts = {};
+    _.each(countyOverViewJSON.CountyList, function (countyJSON, index) {
+
+      var countyId = countyJSON.Id,
+          countyForecast = [],
+          municipalityForecasts = {};
+
+      if(!countyLimit || index < countyLimit.breakPoint == countyLimit.importBelowBreakPoint) {
 
         _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
             var municipalityId = municipalityJSON.Id,
@@ -124,6 +150,10 @@ function deserializeWarnings(countyOverViewJSON, processors, warningType) {
             countyId: countyId,
             warnings: countyForecast
         }));
+
+      } else {
+        console.error("CountyLimit: Did not import "+ warningType + " for " + countyId + ": " + countyJSON.Name);
+      }
     });
 
     return Parse.Promise.when(promises);
@@ -155,11 +185,11 @@ function deserializeAvalancheWarnings(json, processor) {
 }
 
 module.exports = {
-    deserializeFloodWarnings: function (json, processors) {
-        return deserializeWarnings(json, processors, "FloodWarning");
+    deserializeFloodWarnings: function (json, processors, countyLimit) {
+        return deserializeWarnings(json, processors, "FloodWarning", countyLimit);
     },
-    deserializeLandSlideWarnings: function (json, processors) {
-        return deserializeWarnings(json, processors, "LandSlideWarning");
+    deserializeLandSlideWarnings: function (json, processors, countyLimit) {
+        return deserializeWarnings(json, processors, "LandSlideWarning", countyLimit);
     },
     deserializeAvalancheWarnings: deserializeAvalancheWarnings
 };

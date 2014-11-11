@@ -7,13 +7,13 @@ var apiHandler = require('cloud/nve-warnings-api-handler.js'),
     deserializer = require('cloud/warnings-deserializer.js'),
     processor = require('cloud/warnings-processor.js');
 
-function importFloodWarnings() {
-    return apiHandler.fetchFloodWarnings().then(function (json) {
+function importFloodWarnings(countyLimit) {
+    return apiHandler.fetchFloodWarnings(countyLimit).then(function (json) {
         console.log("Flood: json fetched");
         return deserializer.deserializeFloodWarnings(json, {
             countyProcessor: processor.processFloodWarningsForCounty,
             municipalityProcessor: processor.processFloodWarningsForMunicipality
-        });
+        }, countyLimit);
     }).then(function () {
         console.log('Finished importing flood warnings');
         return Parse.Promise.as();
@@ -29,13 +29,13 @@ function importFloodWarnings() {
     });
 }
 
-function importLandSlideWarnings() {
+function importLandSlideWarnings(countyLimit) {
     return apiHandler.fetchLandSlideWarnings().then(function (json) {
         console.log("Landslide: json fetched");
         return deserializer.deserializeLandSlideWarnings(json, {
             countyProcessor: processor.processLandSlideWarningsForCounty,
             municipalityProcessor: processor.processLandSlideWarningsForMunicipality
-        });
+        }, countyLimit);
     }).then(function () {
         console.log('Finished importing landslide warnings');
         return Parse.Promise.as();

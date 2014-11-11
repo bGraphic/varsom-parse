@@ -64,7 +64,7 @@ Parse.Cloud.job("importAvalancheWarnings", function (request, status) {
 });
 
 Parse.Cloud.job("importFloodWarnings", function (request, status) {
-    warningsImporter.importFloodWarnings().then(function () {
+    warningsImporter.importFloodWarnings(request.params.countyLimit).then(function () {
         status.success('Import flood succeeded.');
     }, function (error) {
         status.error('Import failed with error: ' + errorMessageFromErrorObject(error));
@@ -72,7 +72,7 @@ Parse.Cloud.job("importFloodWarnings", function (request, status) {
 });
 
 Parse.Cloud.job("importLandSlideWarnings", function (request, status) {
-    warningsImporter.importLandSlideWarnings().then(function () {
+    warningsImporter.importLandSlideWarnings(request.params.countyLimit).then(function () {
         status.success('Import landslide succeeded.');
     }, function (error) {
         status.error('Import failed with error: ' + errorMessageFromErrorObject(error));

@@ -6,7 +6,7 @@
 var _ = require('underscore');
 
 function saveAll(objects) {
-  
+
     var promises = [];
     _.each(objects, function(object) {
         promises.push(object.save());
@@ -21,6 +21,7 @@ function updateWarningWithWarning(warning, newWarning) {
     warning.set('nextWarningTime',  newWarning.get('nextWarningTime'));
 
     if (newWarning.has('regionId')) {
+        // Is avalanche warning
 
         warning.set('dangerLevel',          newWarning.get('dangerLevel'));
         warning.set('mainText',             newWarning.get('mainText'));
@@ -28,8 +29,10 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('avalancheDanger',      newWarning.get('avalancheDanger'));
         warning.set('alpineWeather',        newWarning.get('alpineWeather'));
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
+        warning.set('highestPriorityAvalancheProblem', newWarning.get('highestPriorityAvalancheProblem'));
 
     } else {
+        // Is flood or landslide warning
 
         warning.set('municipalityId',           newWarning.get('municipalityId'));
         warning.set('activityLevel',            newWarning.get('activityLevel'));
@@ -38,6 +41,7 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('exposedHeightType',        newWarning.get('exposedHeightType'));
         warning.set('exposedHeightValue',       newWarning.get('exposedHeightValue'));
         warning.set('causeList',                newWarning.get('causeList'));
+        warning.set('microBlogPosts',        newWarning.get('microBlogPosts'));
 
         if (newWarning.has('typeList')) {
             warning.set('typeList', newWarning.get('typeList'));
@@ -96,8 +100,78 @@ function highestForecastLevel(forecast) {
     return highestForecastLevel;
 }
 
+function avalancheProblemHasChanged(existingProblem, newProblem) {
+  return existingProblem.causeId !== newProblem.causeId
+    || existingProblem.problemTypeId !== newProblem.problemTypeId;
+}
+
+function highestPriorityAvalancheProblemHasChanged(currentForecast, newForecast) {
+
+    var hasChanged = _.find(newForecast, function (newWarning) {
+        var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        if(!existingWarning)
+          return false;
+
+        var existingWarningAvalancheProblems = existingWarning.get('avalancheProblems');
+        var newWarningAvalancheProblems = newWarning.get('avalancheProblems');
+
+        // The micro blogposts are sorted in the deserializer
+        return existingWarningAvalancheProblems.length > 0
+                && newWarningAvalancheProblems.length > 0
+                && avalancheProblemHasChanged(existingWarningAvalancheProblems[0], newWarningAvalancheProblems[0]);
+    });
+
+    return hasChanged !== undefined;
+}
+
+function microBlogPostsHaveChanged(currentForecast, newForecast) {
+
+    function warningHasMicroBlogPosts(warning) {
+      if(!warning)
+        return false;
+
+      var warningMicroBlogPosts = warning.get('microBlogPosts');
+      return warningMicroBlogPosts && warningMicroBlogPosts.length > 0
+    }
+
+    function onlyNewWarningHasMicroBlogPosts(existingWarning, newWarning) {
+      return !warningHasMicroBlogPosts(existingWarning) && warningHasMicroBlogPosts(newWarning)
+    }
+
+    function newWarningHasNewerMicroBlogPostsThanExistingWarning(existingWarning, newWarning) {
+      if(!warningHasMicroBlogPosts(existingWarning) || !warningHasMicroBlogPosts(newWarning)) {
+        return false;
+      }
+
+      var newWarningMicroBlogPosts = newWarning.get('microBlogPosts');
+      var existingWarningMicroBlogPosts = existingWarning.get('microBlogPosts');
+
+      // The micro blogposts are sorted in the deserializer
+      return newWarningMicroBlogPosts[0].dateTime > existingWarningMicroBlogPosts[0].dateTime;
+    }
+
+    var hasChanged = _.find(newForecast, function (newWarning) {
+        var existingWarning = findWarningInForecast(newWarning, currentForecast);
+
+        return onlyNewWarningHasMicroBlogPosts(existingWarning, newWarning)
+            || newWarningHasNewerMicroBlogPostsThanExistingWarning(existingWarning, newWarning);
+    });
+
+    return hasChanged !== undefined;
+
+}
+
 function processWarningsForArea(area, newWarnings, warningType) {
     var currentWarnings = area.get(warningType + 'Forecast');
+
+    // Do this before updating current forecast
+    if (warningType === 'AvalancheWarning') {
+      area.set("highestPriorityAvalancheProblemHasChanged", highestPriorityAvalancheProblemHasChanged(currentWarnings, newWarnings));
+    } else if(area.has("municipalityId")) {
+      area.set(warningType + "MicroBlogPostsHaveChanged", microBlogPostsHaveChanged(currentWarnings, newWarnings));
+    }
+
     area.set(warningType + 'Forecast', updateForecastWithNewForecast(currentWarnings, newWarnings));
     area.set(warningType + 'NewHighestForecastLevel', highestForecastLevel(area.get(warningType + 'Forecast')));
     if(!area.has(warningType + 'HighestForecastLevel')) {
@@ -138,7 +212,7 @@ function processWarningsForMunicipality(municipalityWarnings, warningType) {
             municpalitySaveList.push(updatedMunicipality);
         });
 
-        return saveAllBatches(municpalitySaveList);
+        return saveAll(municpalitySaveList);
     });
 }
 

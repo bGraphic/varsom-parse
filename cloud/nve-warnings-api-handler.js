@@ -4,9 +4,9 @@
 'use strict';
 
 var config = require('cloud/config.js'),
-    AVALANCHE_WARNING_API_URL = config.api.urlBase.avalanche + '/RegionSummary/Detail/1',
-    FLOOD_WARNING_API_URL = config.api.urlBase.flood + '/CountySummary/1',
-    LANDSLIDE_WARNING_API_URL = config.api.urlBase.landSlide + '/CountySummary/1';
+    AVALANCHE_WARNING_API_PATH = '/RegionSummary/Detail/1',
+    FLOOD_WARNING_API_PATH = '/CountySummary/1',
+    LANDSLIDE_WARNING_API_PATH = '/CountySummary/1';
 
 function api(url) {
     return Parse.Cloud.httpRequest({
@@ -31,15 +31,21 @@ function fetch(url) {
 }
 
 function fetchAvalancheWarnings() {
-    return fetch(AVALANCHE_WARNING_API_URL);
+    return config.api.urlBase.avalanche().then(function (base) {
+        return fetch(base + AVALANCHE_WARNING_API_PATH);
+    });
 }
 
 function fetchFloodWarnings() {
-    return fetch(FLOOD_WARNING_API_URL);
+    return config.api.urlBase.flood().then(function (base) {
+        return fetch(base + FLOOD_WARNING_API_PATH);
+    });
 }
 
 function fetchLandSlideWarnings() {
-    return fetch(LANDSLIDE_WARNING_API_URL);
+    return config.api.urlBase.landSlide().then(function (base) {
+        return fetch(base + LANDSLIDE_WARNING_API_PATH);
+    });
 }
 
 module.exports = {
