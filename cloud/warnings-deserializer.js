@@ -112,13 +112,16 @@ function updateCountyForecastWithMunicipalityForecast(countyForecast, municipali
     return countyForecast;
 }
 
-function deserializeWarnings(countyOverViewJSON, processors, warningType) {
+function deserializeWarnings(countyOverViewJSON, processors, warningType, countyLimit) {
     var promises = [];
 
-    _.each(countyOverViewJSON.CountyList, function (countyJSON) {
-        var countyId = countyJSON.Id,
-            countyForecast = [],
-            municipalityForecasts = {};
+    _.each(countyOverViewJSON.CountyList, function (countyJSON, index) {
+
+      var countyId = countyJSON.Id,
+          countyForecast = [],
+          municipalityForecasts = {};
+
+      if(!countyLimit || index < countyLimit.breakPoint == countyLimit.importBelowBreakPoint) {
 
         _.each(countyJSON.MunicipalityList, function (municipalityJSON) {
             var municipalityId = municipalityJSON.Id,
@@ -147,6 +150,10 @@ function deserializeWarnings(countyOverViewJSON, processors, warningType) {
             countyId: countyId,
             warnings: countyForecast
         }));
+
+      } else {
+        console.error("CountyLimit: Did not import "+ warningType + " for " + countyId + ": " + countyJSON.Name);
+      }
     });
 
     return Parse.Promise.when(promises);
@@ -178,11 +185,11 @@ function deserializeAvalancheWarnings(json, processor) {
 }
 
 module.exports = {
-    deserializeFloodWarnings: function (json, processors) {
-        return deserializeWarnings(json, processors, "FloodWarning");
+    deserializeFloodWarnings: function (json, processors, countyLimit) {
+        return deserializeWarnings(json, processors, "FloodWarning", countyLimit);
     },
-    deserializeLandSlideWarnings: function (json, processors) {
-        return deserializeWarnings(json, processors, "LandSlideWarning");
+    deserializeLandSlideWarnings: function (json, processors, countyLimit) {
+        return deserializeWarnings(json, processors, "LandSlideWarning", countyLimit);
     },
     deserializeAvalancheWarnings: deserializeAvalancheWarnings
 };
