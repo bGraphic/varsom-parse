@@ -4,7 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
-var config = require('cloud/config.js');
+var apiHandler = require('cloud/nve-warnings-api-handler.js');
 
 function updateCountyWithJSON(county, countyJSON) {
     county.set('countyId', countyJSON.Id);
@@ -59,16 +59,8 @@ function countySummariesJSONToCounties(countySummariesJSON) {
 
 function importCounties() {
 
-    var countySummariesJSON = {};
-
-    return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.flood + '/CountyOverview/1',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function (httpResponse) {
-        countySummariesJSON = httpResponse.data;
-        return countySummariesJSONToCounties(countySummariesJSON);
+    return apiHandler.fetchFloodWarnings().then(function (json) {
+        return countySummariesJSONToCounties(json.CountyList);
     }).then(function (newCounties) {
         return createOrUpdateCounties(newCounties);
     }).then(function (counties) {

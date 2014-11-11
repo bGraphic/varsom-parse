@@ -4,7 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
-var config = require('cloud/config.js');
+var apiHandler = require('cloud/nve-warnings-api-handler.js');
 
 function updateRegionWithJSON(region, regionJSON) {
     region.set('regionId', regionJSON.Id);
@@ -72,16 +72,8 @@ function regionOverviewsJSONToRegions(regionOverviewsJSON) {
 
 function importRegions() {
 
-    var regionOverviewsJSON = {};
-
-    return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.avalanche + '/RegionSummary/Detail/1',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function (httpResponse) {
-        regionOverviewsJSON = httpResponse.data;
-        return regionOverviewsJSONToRegions(regionOverviewsJSON);
+    return apiHandler.fetchAvalancheWarnings().then(function (json) {
+        return regionOverviewsJSONToRegions(json);
     }).then(function (newRegions) {
         return createOrUpdateRegions(newRegions);
     }).then(function (regions) {
