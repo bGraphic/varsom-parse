@@ -36,23 +36,43 @@ function createOrUpdateRegions(newRegions) {
 
         var promises = [];
 
-        _.each(newRegions, function (newregion) {
+        _.each(newRegions, function (newRegion) {
             var region = _.find(regions, function (region) {
-                return region.get('regionId') === newregion.get('regionId');
+                return region.get('regionId') === newRegion.get('regionId');
             });
 
             if (!region) {
-                region = newregion;
+                region = newRegion;
+                console.log("Create region: " + region.get("regionId"));
             } else {
-                region = updateRegion(region, newregion);
+                region = updateRegion(region, newRegion);
+                console.log("Update region: " + region.get("regionId"));
             }
 
             region = setRegionRegOpsUrl(region);
-
             promises.push(region.save());
+        });
 
-            console.log("Update/create region: " + region.get("regionId"));
+        return Parse.Promise.when(promises);
+    });
+}
 
+function deleteRegions(newRegions) {
+    var regionQuery = new Parse.Query('AvalancheRegion');
+
+    return regionQuery.find().then(function (regions) {
+
+        var promises = [];
+
+        _.each(regions, function (region) {
+            var newRegion = _.find(newRegions, function (newRegion) {
+                return region.get('regionId') === newRegion.get('regionId');
+            });
+
+            if (!newRegion) {
+                promises.push(region.destroy());
+                console.log("Delete region: " + region.get("regionId"));
+            }
         });
 
         return Parse.Promise.when(promises);
@@ -75,8 +95,8 @@ function importRegions() {
     return apiHandler.fetchAvalancheWarnings().then(function (json) {
         return regionOverviewsJSONToRegions(json);
     }).then(function (newRegions) {
-        return createOrUpdateRegions(newRegions);
-    }).then(function (regions) {
+        return Parse.Promise.when(createOrUpdateRegions(newRegions), deleteRegions(newRegions));
+    }).then(function () {
         return Parse.Promise.as('Regions import finished successfully');
     });
 }
