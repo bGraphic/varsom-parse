@@ -28,6 +28,7 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('avalancheWarning',     newWarning.get('avalancheWarning'));
         warning.set('avalancheDanger',      newWarning.get('avalancheDanger'));
         warning.set('alpineWeather',        newWarning.get('alpineWeather'));
+        warning.set('emergencyWarning',     newWarning.get('emergencyWarning'));
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
         warning.set('highestPriorityAvalancheProblem', newWarning.get('highestPriorityAvalancheProblem'));
 

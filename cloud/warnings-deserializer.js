@@ -62,13 +62,17 @@ function deserializeWarning(warningJSON, warningType) {
 
     if(warningJSON.MainText)
       warning.set('mainText', {no: warningJSON.MainText.trim()});
+    else
+      warning.set('mainText', {});
 
-    if (warningType === "LandSlideWarning" || warningType === "FloodWarning") {
+    if(warningType === "LandSlideWarning" || warningType === "FloodWarning") {
 
       warning.set('activityLevel', parseInt(warningJSON.ActivityLevel));
 
       if(warningJSON.WarningText)
         warning.set('warningText', {no: warningJSON.WarningText.trim()});
+      else
+        warning.set('warningText', {});
 
       warning.set('exposedHeightType', warningJSON.ExposedHeightType);
       warning.set('exposedHeightValue', warningJSON.ExposedHeightValue);
@@ -89,13 +93,25 @@ function deserializeWarning(warningJSON, warningType) {
 
       if(warningJSON.AvalancheWarning)
         warning.set('avalancheWarning', {no: warningJSON.AvalancheWarning.trim()});
+      else
+        warning.set('avalancheWarning', {});
+
       if(warningJSON.AvalancheDanger)
         warning.set('avalancheDanger', {no: warningJSON.AvalancheDanger.trim()});
+      else
+        warning.set('avalancheDanger', {});
+
       if(warningJSON.AlpineWeather)
         warning.set('alpineWeather', {no: warningJSON.AlpineWeather.trim()});
+      else
+        warning.set('alpineWeather', {});
 
-      var avalancheProblems = deserializeAvalancheProblems(warningJSON.AvalancheProblems)
-      warning.set('avalancheProblems', avalancheProblems);
+      if(warningJSON.EmergencyWarning && warningJSON.EmergencyWarning != "Ikke gitt")
+        warning.set('emergencyWarning', {no: warningJSON.EmergencyWarning.trim()});
+      else
+        warning.set('emergencyWarning', {});
+
+      warning.set('avalancheProblems', deserializeAvalancheProblems(warningJSON.AvalancheProblems));
     }
 
     return warning;
