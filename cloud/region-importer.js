@@ -75,6 +75,15 @@ function deleteRegions(newRegions) {
             }
         });
 
+        var region20 = _.find(regions, function (region) {
+            return region.get('regionId') === 20;
+        });
+
+        if (region20) {
+            promises.push(region20.destroy());
+            console.log("Delete region Nordfjord: " + region20.get("regionId"));
+        }
+
         return Parse.Promise.when(promises);
     });
 }
