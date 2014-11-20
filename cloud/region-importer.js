@@ -50,7 +50,11 @@ function createOrUpdateRegions(newRegions) {
             }
 
             region = setRegionRegOpsUrl(region);
-            promises.push(region.save());
+
+            if(region.get('regionId') != 20)
+              promises.push(region.save());
+            else
+              console.log("Do not save region: 20, Nordfjord");
         });
 
         return Parse.Promise.when(promises);
@@ -76,12 +80,12 @@ function deleteRegions(newRegions) {
         });
 
         var region20 = _.find(regions, function (region) {
-            return region.get('regionId') === 20;
+            return region.get('regionId') == 20;
         });
 
         if (region20) {
             promises.push(region20.destroy());
-            console.log("Delete region Nordfjord: " + region20.get("regionId"));
+            console.log("Delete region: 20 Nordfjord: ");
         }
 
         return Parse.Promise.when(promises);
