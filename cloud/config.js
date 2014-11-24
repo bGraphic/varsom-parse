@@ -5,9 +5,9 @@
 
 function apiVersion(type) {
     if (type === 'avalanche') {
-        return 'v2.0.1';
+        return 'v2.0.2';
     } else {
-        return 'v1.0.2';
+        return 'v1.0.3';
     }
 }
 
