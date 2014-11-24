@@ -168,7 +168,7 @@ function deserializeWarnings(countyOverViewJSON, processors, warningType, county
         }));
 
       } else {
-        console.error("CountyLimit: Did not import "+ warningType + " for " + countyId + ": " + countyJSON.Name);
+        console.log("CountyLimit: Did not import "+ warningType + " for " + countyId + ": " + countyJSON.Name);
       }
     });
 
