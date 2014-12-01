@@ -156,8 +156,12 @@ function pushMicroBlogPostsUpdate(area, warningType) {
     }
 }
 
+function doNothing() {
+  return Parse.Promise.as();
+}
+
 module.exports = {
     pushHighestForecastLevelUpdate: pushHighestForecastLevelUpdate,
-    pushHighestPriorityAvalancheProblemHasChangedUpdate: pushHighestPriorityAvalancheProblemHasChangedUpdate,
-    pushMicroBlogPostsUpdate: pushMicroBlogPostsUpdate
+    pushHighestPriorityAvalancheProblemHasChangedUpdate: doNothing, //pushHighestPriorityAvalancheProblemHasChangedUpdate,
+    pushMicroBlogPostsUpdate: doNothing //pushMicroBlogPostsUpdate
 };
