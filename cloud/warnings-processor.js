@@ -28,6 +28,7 @@ function updateWarningWithWarning(warning, newWarning) {
         warning.set('avalancheWarning',     newWarning.get('avalancheWarning'));
         warning.set('avalancheDanger',      newWarning.get('avalancheDanger'));
         warning.set('alpineWeather',        newWarning.get('alpineWeather'));
+        warning.set('emergencyWarning',     newWarning.get('emergencyWarning'));
         warning.set('avalancheProblems',    newWarning.get('avalancheProblems'));
         warning.set('highestPriorityAvalancheProblem', newWarning.get('highestPriorityAvalancheProblem'));
 
@@ -192,7 +193,7 @@ function processWarningsForCounty(countyWarnings, warningType) {
           var updatedCounty = processWarningsForArea(county, countyWarnings.warnings, warningType);
           return updatedCounty.save();
         } else {
-          console.error('No county in Parse with id: ' + countyWarnings.countyId);
+          console.log('No county in Parse with id: ' + countyWarnings.countyId);
           return Parse.Promise.as();
         }
     });
@@ -227,7 +228,7 @@ function processAvalancheWarningsForRegion(regionWarnings, warningType) {
           var updatedRegion = processWarningsForArea(region, regionWarnings.warnings, warningType);
           return updatedRegion.save();
         } else {
-          console.error('No avalanche region in Parse with id: ' + regionWarnings.regionId);
+          console.log('No avalanche region in Parse with id: ' + regionWarnings.regionId);
           return Parse.Promise.as();
         }
     });

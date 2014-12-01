@@ -75,11 +75,13 @@ function pushHighestForecastLevelUpdate(area, warningType) {
                 areaId: ""+areaIDForArea(area),
                 parentId: ""+parentIDForArea(area)
             }
-        }).then(function () {
+        }).always(function(result) {
             setCurrentToNewForecastLevel(area, warningType, newLevel);
-            return Parse.Promise.as();
-        }, function (error) {
-            console.error("Error pushing warning: " + JSON.stringify(error));
+
+            if((result instanceof Parse.Error)) {
+                console.error("Error pushing warning level change: " + JSON.stringify(result));
+            }
+
             return Parse.Promise.as();
         });
 
@@ -106,11 +108,13 @@ function pushHighestPriorityAvalancheProblemHasChangedUpdate(area) {
               areaId: ""+areaIDForArea(area),
               parentId: ""+parentIDForArea(area)
           }
-      }).then(function () {
+      }).always(function(result) {
           area.set("highestPriorityAvalancheProblemHasChanged", false);
-          return area.save();
-      }, function (error) {
-          console.error("Error pushing warning: " + JSON.stringify(error));
+
+          if((result instanceof Parse.Error)) {
+              console.error("Error pushing problem : " + JSON.stringify(result));
+          }
+
           return Parse.Promise.as();
       });
 
@@ -137,11 +141,13 @@ function pushMicroBlogPostsUpdate(area, warningType) {
               areaId: ""+areaIDForArea(area),
               parentId: ""+parentIDForArea(area)
           }
-      }).then(function () {
+      }).always(function(result) {
           area.set(warningType + "MicroBlogPostsHaveChanged", false);
-          return area.save();
-      }, function (error) {
-          console.error("Error pushing microBlogPostsHaveChanged: " + JSON.stringify(error));
+
+          if((result instanceof Parse.Error)) {
+              console.error("Error pushing micro blog post change: " + JSON.stringify(result));
+          }
+
           return Parse.Promise.as();
       });
 
@@ -150,8 +156,12 @@ function pushMicroBlogPostsUpdate(area, warningType) {
     }
 }
 
+function doNothing() {
+  return Parse.Promise.as();
+}
+
 module.exports = {
     pushHighestForecastLevelUpdate: pushHighestForecastLevelUpdate,
-    pushHighestPriorityAvalancheProblemHasChangedUpdate: pushHighestPriorityAvalancheProblemHasChangedUpdate,
-    pushMicroBlogPostsUpdate: pushMicroBlogPostsUpdate
+    pushHighestPriorityAvalancheProblemHasChangedUpdate: doNothing, //pushHighestPriorityAvalancheProblemHasChangedUpdate,
+    pushMicroBlogPostsUpdate: doNothing //pushMicroBlogPostsUpdate
 };

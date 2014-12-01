@@ -4,7 +4,15 @@
 'use strict';
 
 var _ = require('underscore');
-var config = require('cloud/config.js');
+var apiHandler = require('cloud/nve-warnings-api-handler.js');
+
+function isRegionJSONCountyRegionJSON(regionJSON) {
+  return regionJSON.Id > 50;
+}
+
+function isRegionJSONNordfjordJSON(regionJSON) {
+  return regionJSON.Id == 20;
+}
 
 function updateRegionWithJSON(region, regionJSON) {
     region.set('regionId', regionJSON.Id);
@@ -36,23 +44,43 @@ function createOrUpdateRegions(newRegions) {
 
         var promises = [];
 
-        _.each(newRegions, function (newregion) {
+        _.each(newRegions, function (newRegion) {
             var region = _.find(regions, function (region) {
-                return region.get('regionId') === newregion.get('regionId');
+                return region.get('regionId') === newRegion.get('regionId');
             });
 
             if (!region) {
-                region = newregion;
+                region = newRegion;
+                console.log("Create region: " + region.get("regionId"));
             } else {
-                region = updateRegion(region, newregion);
+                region = updateRegion(region, newRegion);
+                console.log("Update region: " + region.get("regionId"));
             }
 
             region = setRegionRegOpsUrl(region);
-
             promises.push(region.save());
+        });
 
-            console.log("Update/create region: " + region.get("regionId"));
+        return Parse.Promise.when(promises);
+    });
+}
 
+function deleteRegions(newRegions) {
+    var regionQuery = new Parse.Query('AvalancheRegion');
+
+    return regionQuery.find().then(function (regions) {
+
+        var promises = [];
+
+        _.each(regions, function (region) {
+            var newRegion = _.find(newRegions, function (newRegion) {
+                return region.get('regionId') === newRegion.get('regionId');
+            });
+
+            if (!newRegion) {
+                promises.push(region.destroy());
+                console.log("Delete region: " + region.get("regionId"));
+            }
         });
 
         return Parse.Promise.when(promises);
@@ -63,8 +91,12 @@ function regionOverviewsJSONToRegions(regionOverviewsJSON) {
     var regions = [];
 
     _.each(regionOverviewsJSON, function (regionOverviewJSON) {
+
+      if(!isRegionJSONCountyRegionJSON(regionOverviewJSON) && !isRegionJSONNordfjordJSON(regionOverviewJSON)) {
         var region = new Parse.Object('AvalancheRegion');
         regions.push(updateRegionWithJSON(region, regionOverviewJSON));
+      }
+
     });
 
     return regions;
@@ -72,19 +104,11 @@ function regionOverviewsJSONToRegions(regionOverviewsJSON) {
 
 function importRegions() {
 
-    var regionOverviewsJSON = {};
-
-    return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.avalanche + '/RegionSummary/Detail/1',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function (httpResponse) {
-        regionOverviewsJSON = httpResponse.data;
-        return regionOverviewsJSONToRegions(regionOverviewsJSON);
+    return apiHandler.fetchAvalancheWarnings().then(function (json) {
+        return regionOverviewsJSONToRegions(json);
     }).then(function (newRegions) {
-        return createOrUpdateRegions(newRegions);
-    }).then(function (regions) {
+        return Parse.Promise.when(createOrUpdateRegions(newRegions), deleteRegions(newRegions));
+    }).then(function () {
         return Parse.Promise.as('Regions import finished successfully');
     });
 }

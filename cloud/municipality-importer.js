@@ -4,7 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
-var config = require('cloud/config.js');
+var apiHandler = require('cloud/nve-warnings-api-handler.js');
 
 function nameFixer(name) {
     name = name.trim();
@@ -79,13 +79,8 @@ function countySummariesJSONToMunicipalities(countySummariesJSON) {
 
 function importMunicipalities() {
 
-    return Parse.Cloud.httpRequest({
-        url: config.api.urlBase.flood + '/CountySummary/1',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function (httpResponse) {
-        return countySummariesJSONToMunicipalities(httpResponse.data.CountyList);
+    return apiHandler.fetchFloodWarnings().then(function (json) {
+        return countySummariesJSONToMunicipalities(json.CountyList);
     }).then(function (newMunicipalities) {
         return createOrUpdateMunicipalities(newMunicipalities);
     }).then(function (counties) {
