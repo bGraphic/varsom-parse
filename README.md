@@ -55,10 +55,10 @@ touch global.json
   * Ask benedicte@lillyapps.no for the appropriate keys for prod, beta and test.
   * Create your own Parse app to use in development.
 
-## Parse app
+## How to create your Parse app
 
 1. Create a parse account: https://www.parse.com/signup
-2. Create a parse a new project: https://www.parse.com/apps/new
+2. Create a new project: https://www.parse.com/apps/new
 3. Add your parse app keys to global.json.
   * Keys can be found under settings -> keys
 4. Deploy to parse: `parse deploy varsom-dev`
@@ -69,7 +69,7 @@ touch global.json
   * Add a parameter with name: `apiEnv`, type: `String`, value: `prod`, `test` or `debug`.
     * `prod` will fetch data from NVE's production api
     * `test` will fetch data from NVE's test api
-    * `debug` will fetch data from `http://varsom-debug-data.parseapp.com`.*
+    * `debug` will fetch data from `http://varsom-debug-data.parseapp.com`*
 2. Import areas: counties, municipalities and avalanche regions by running these jobs: 
   * `importCounties`
   * `importMunicipalities`
