@@ -52,7 +52,7 @@ touch global.json
 }
 
 ```
-  * Ask benedicte@lillyapps.no for the appropriate keys for prod, beta and test.
+  * Ask benedicte@lillylabs.no for the appropriate keys for prod, beta and test.
   * Create your own Parse app to use in development.
 
 ## How to create your Parse app
@@ -85,3 +85,22 @@ touch global.json
 
 \* This is an app set up by Lilly Labs to serve debug data. The code can be found
     in this github project: [varsom-debug-data-app](https://github.com/bGraphic/varsom-debug-data-app).
+    
+## Branching
+The project follows the [git flow branching model](http://nvie.com/posts/a-successful-git-branching-model/) 
+by using the [git flow git extention](https://github.com/nvie/gitflow).
+
+## Deployment
+Deployment is done by using parse deploy.
+
+**Prod:**  
+`parse deploy varsom-prod`  
+
+**Beta:**  
+`parse deploy varsom-beta`
+
+**Test:**  
+`parse deploy varsom-test`
+
+**Dev:**   
+`parse deploy varsom-prod`  
