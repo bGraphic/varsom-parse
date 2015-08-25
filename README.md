@@ -3,7 +3,26 @@ Varsom | Parse
 
 [The varsom apps](http://github.com/varsom-apps)'s backend.
 
-Responsible for importing data from [api.nve.no](http://api.nve.no).
+Responsible for importing data displayed by the client apps. 
+
+The api being used is controlled by the env parameter: `apiEnv`, type: `String`, value: `prod`, `test` or `debug`.
+* `prod` will fetch data from NVE's production api: [api.nve.no](http://api.nve.no)
+* `test` will fetch data from NVE's test api
+* `debug` will fetch data from `http://varsom-debug-data.parseapp.com`*
+    
+NVE has three parse apps in their account:
+* **varsom (prod)**
+  * `apiEnv` always set to prod.
+  * used by the app in production.
+  * Current varsom-parse master branch.
+* **varsom-beta**
+  * `apiEnv` can be set to `prod`, `test` or `debug`.
+  * Used fortesting with NVE staff and beta test crew.
+  * Current varsom-parse release branch.
+* **varsom-test**
+  * `apiEnv` can be set to `prod`, `test` or `debug`
+  * Used for testing within team.
+  * Current varsom-parse develop branch.
 
 # Getting started
 
@@ -104,3 +123,5 @@ Deployment is done by using parse deploy.
 
 **Dev:**   
 `parse deploy varsom-dev`  
+
+
