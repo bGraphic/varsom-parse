@@ -53,9 +53,9 @@ touch global.json
 
 ```
   * Ask benedicte@lillylabs.no for the appropriate keys for prod, beta and test.
-  * Create your own Parse app to use in development.
+  * Create your own Parse app to use in development, see below.
 
-## How to create your Parse app
+## How to create your Parse dev app
 
 1. Create a parse account: https://www.parse.com/signup
 2. Create a new project: https://www.parse.com/apps/new
@@ -103,4 +103,4 @@ Deployment is done by using parse deploy.
 `parse deploy varsom-test`
 
 **Dev:**   
-`parse deploy varsom-prod`  
+`parse deploy varsom-dev`  
