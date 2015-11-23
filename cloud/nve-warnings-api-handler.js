@@ -3,10 +3,15 @@
 
 'use strict';
 
-var config = require('cloud/config.js'),
-    AVALANCHE_WARNING_API_PATH = '/RegionSummary/Detail/1',
-    FLOOD_WARNING_API_PATH = '/CountySummary/1',
-    LANDSLIDE_WARNING_API_PATH = '/CountySummary/1';
+var WARNING_TYPE_AVALANCHE = "avalanche";
+var WARNING_TYPE_FLOOD = "flood";
+var WARNING_TYPE_LANDSLIDE = "landslide";
+
+function apiUrl(warningType) {
+  return Parse.Config.get().then(function(config) {
+    return config.get(warningType + "ApiUrl");
+  });
+}
 
 function api(url) {
     return Parse.Cloud.httpRequest({
@@ -30,26 +35,20 @@ function fetch(url) {
     return promise;
 }
 
-function fetchAvalancheWarnings() {
-    return config.api.urlBase.avalanche().then(function (base) {
-        return fetch(base + AVALANCHE_WARNING_API_PATH);
-    });
-}
-
-function fetchFloodWarnings() {
-    return config.api.urlBase.flood().then(function (base) {
-        return fetch(base + FLOOD_WARNING_API_PATH);
-    });
-}
-
-function fetchLandSlideWarnings() {
-    return config.api.urlBase.landSlide().then(function (base) {
-        return fetch(base + LANDSLIDE_WARNING_API_PATH);
+function fetchWarningsForWarningType(warningType) {
+    return apiUrl(warningType).then(function (url) {
+        return fetch(url);
     });
 }
 
 module.exports = {
-    fetchAvalancheWarnings: fetchAvalancheWarnings,
-    fetchFloodWarnings: fetchFloodWarnings,
-    fetchLandSlideWarnings: fetchLandSlideWarnings
+    fetchAvalancheWarnings: function() {
+      return fetchWarningsForWarningType(WARNING_TYPE_AVALANCHE);
+    },
+    fetchFloodWarnings: function() {
+      return fetchWarningsForWarningType(WARNING_TYPE_FLOOD);
+    },
+    fetchLandSlideWarnings: function() {
+      return fetchWarningsForWarningType(WARNING_TYPE_LANDSLIDE);
+    },
 };
