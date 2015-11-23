@@ -3,9 +3,11 @@
 
 'use strict';
 
-var apiHandler = require('cloud/nve-warnings-api-handler.js'),
-    deserializer = require('cloud/warnings-deserializer.js'),
-    processor = require('cloud/warnings-processor.js');
+var _ = require('underscore');
+var apiHandler = require('cloud/nve-warnings-api-handler.js');
+var deserializer = require('cloud/warnings-deserializer.js');
+var processor = require('cloud/warnings-processor.js');
+var AvalancheWarning = require('cloud/model-warning-avalanche.js');
 
 function importFloodWarnings(countyLimit) {
     return apiHandler.fetchFloodWarnings(countyLimit).then(function (json) {
@@ -53,10 +55,26 @@ function importLandSlideWarnings(countyLimit) {
 
 function importAvalancheWarnings() {
     return apiHandler.fetchAvalancheWarnings().then(function (json) {
-        console.log("Avalanche: json fetched");
-        return deserializer.deserializeAvalancheWarnings(json,
-            processor.processAvalancheWarningsForRegion
-        );
+      var promises = [];
+
+      _.each(json, function (regionJSON) {
+        var regionId = regionJSON.Id;
+        var regionForecast = _.map(regionJSON.AvalancheWarningList, function (warningJSON) {
+          var warning = new AvalancheWarning();
+          warning.updateAttributesFromWarningJson(warningJSON);
+          warning.set('regionId', regionId);
+          return warning;
+        });
+
+        if (regionForecast.length !== 3) {
+          console.error("Region " + regionId + " has " + regionForecast.length + "warnings");
+        }
+
+        promises.push(processor.processAvalancheWarningsForRegion(regionId, regionForecast));
+      });
+
+      return Parse.Promise.when(promises);
+
     }).then(function () {
         console.log("Avalanche: json imported");
         return Parse.Promise.as();

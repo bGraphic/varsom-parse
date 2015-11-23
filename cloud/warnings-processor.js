@@ -217,18 +217,18 @@ function processWarningsForMunicipality(municipalityWarnings, warningType) {
     });
 }
 
-function processAvalancheWarningsForRegion(regionWarnings, warningType) {
+function processAvalancheWarningsForRegion(regionId, regionForecast, warningType) {
     return Parse.Promise.as().then(function () {
         var regionQuery = new Parse.Query('AvalancheRegion');
-        regionQuery.equalTo('regionId', regionWarnings.regionId);
+        regionQuery.equalTo('regionId', regionId);
         regionQuery.include(warningType + 'Forecast');
         return regionQuery.first();
     }).then(function (region) {
         if(region) {
-          var updatedRegion = processWarningsForArea(region, regionWarnings.warnings, warningType);
+          var updatedRegion = processWarningsForArea(region, regionForecast, warningType);
           return updatedRegion.save();
         } else {
-          console.log('No avalanche region in Parse with id: ' + regionWarnings.regionId);
+          console.log('No avalanche region in Parse with id: ' + regionId);
           return Parse.Promise.as();
         }
     });
@@ -247,7 +247,7 @@ module.exports = {
     processLandSlideWarningsForMunicipality: function (municipalityWarnings) {
         return processWarningsForMunicipality(municipalityWarnings, "LandSlideWarning");
     },
-    processAvalancheWarningsForRegion: function (regionWarnings) {
-        return processAvalancheWarningsForRegion(regionWarnings, "AvalancheWarning");
+    processAvalancheWarningsForRegion: function (regionId, regionForecast) {
+        return processAvalancheWarningsForRegion(regionId, regionForecast, "AvalancheWarning");
     }
 };

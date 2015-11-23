@@ -25,10 +25,11 @@ function fetchDataFromUrl(url) {
       'Content-Type': 'application/json'
     }
   }).done(function (result) {
+    console.log("API: Data fetched for " + url);
     return result.data;
   }).fail(function (error) {
-    console.error("API Error: " + JSON.stringify(error));
-    return Parse.Promise.error("API Error: " + url);
+    console.error("API: Error - " + JSON.stringify(error));
+    return Parse.Promise.error("API: Error for " + url);
   });
 }
 
