@@ -57,9 +57,9 @@ Parse.Cloud.job("importCounties", function (request, status) {
 
 Parse.Cloud.job("importAvalancheWarnings", function (request, status) {
     warningsImporter.importAvalancheWarnings(status).then(function () {
-        status.success('Import avalanche succeeded.');
+        status.success('Avalanche import succeeded.');
     }, function (error) {
-        status.error('Import failed with error: ' + errorMessageFromErrorObject(error));
+        status.error('Avalanche import failed: ' + errorMessageFromErrorObject(error));
     });
 });
 

@@ -8,6 +8,7 @@ var apiHandler = require('cloud/nve-warnings-api-handler.js');
 var deserializer = require('cloud/warnings-deserializer.js');
 var processor = require('cloud/warnings-processor.js');
 var AvalancheWarning = require('cloud/model-warning-avalanche.js');
+var AvalancheRegion = require('cloud/model-region.js');
 
 function importFloodWarnings(countyLimit) {
     return apiHandler.fetchFloodWarnings(countyLimit).then(function (json) {
@@ -57,32 +58,35 @@ function importAvalancheWarnings() {
     return apiHandler.fetchAvalancheWarnings().then(function (json) {
       var promises = [];
 
-      _.each(json, function (regionJSON) {
-        var regionId = regionJSON.Id;
-        var regionForecast = _.map(regionJSON.AvalancheWarningList, function (warningJSON) {
+      _.each(json, function (regionJson) {
+        var regionId = regionJson.Id;
+
+        var regionForecast = _.map(regionJson.AvalancheWarningList, function (warningJSON) {
           var warning = new AvalancheWarning();
-          warning.updateAttributesFromWarningJson(warningJSON);
           warning.set('regionId', regionId);
+          warning.updateAttributesFromWarningJson(warningJSON);
           return warning;
         });
 
-        if (regionForecast.length !== 3) {
-          console.error("Region " + regionId + " has " + regionForecast.length + "warnings");
-        }
-
-        promises.push(processor.processAvalancheWarningsForRegion(regionId, regionForecast));
+        promises.push(AvalancheRegion.queryForRegionWithId(regionId).done(function (region) {
+          if (region) {
+            region.setAttributesNeededByPush(regionForecast, 'AvalancheWarning');
+            region.udpdateForecast(regionForecast, 'AvalancheWarning');
+            return region.save();
+          } else {
+            console.error("Avalanche: no region with id=" + regionId);
+            return Parse.Promise.as();
+          }
+        }));
       });
 
       return Parse.Promise.when(promises);
 
-    }).then(function () {
-        console.log("Avalanche: json imported");
-        return Parse.Promise.as();
-    }, function (error) {
+    }).fail(function (error) {
         console.error("Avalanche: import failed - " + JSON.stringify(error));
         if (error.code === 100) {
             console.log("Avalanche: try again");
-            return importLandSlideWarnings();
+            return importAvalancheWarnings();
         } else {
             console.log("Avalanche: do not try again");
             return Parse.Promise.error(error);

@@ -4,6 +4,27 @@
 
 var deserializer = require('cloud/util-deserializer.js');
 
+function hasSameArea(currentWarning, newWarning) {
+  if (!currentWarning || !newWarning) {
+    return false;
+  }
+
+  if (currentWarning.has('municipalityId') && newWarning.has('municipalityId')) {
+    return currentWarning.get('municipalityId') === newWarning.get('municipalityId');
+  } else if (currentWarning.has('countyId') && newWarning.has('countyId')) {
+    return currentWarning.get('countyId') === newWarning.get('countyId');
+  } else if (currentWarning.has('regionId') && newWarning.has('regionId')) {
+    return currentWarning.get('regionId') === newWarning.get('regionId');
+  } else {
+    return false;
+  }
+}
+
+function hasSameValidPeriod(currentWarning, newWarning) {
+  return currentWarning.get('validFrom').getTime() === newWarning.get('validFrom').getTime()
+    && currentWarning.get('validTo').getTime() === newWarning.get('validTo').getTime();
+}
+
 var Warning = Parse.Object.extend('Warning', {
   // instance methods
   updateAttributesFromWarningJson: function (warningJson) {
@@ -71,6 +92,13 @@ var Warning = Parse.Object.extend('Warning', {
       if (warning.has('typeList')) {
         this.set('typeList', warning.get('typeList'));
       }
+    }
+  },
+  isSameWarning: function (warning) {
+    if (!warning) {
+      return false;
+    } else {
+      return hasSameArea(this, warning) && hasSameValidPeriod(this, warning);
     }
   }
 }, {
