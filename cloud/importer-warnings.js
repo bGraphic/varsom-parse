@@ -3,7 +3,7 @@
 'use strict';
 
 var _ = require('underscore');
-var apiHandler = require('cloud/nve-warnings-api-handler.js');
+var apiHandler = require('cloud/api-handler.js');
 var Warning = require('cloud/model-warning.js');
 var Area = require('cloud/model-area.js');
 var Forecast = require('cloud/util-forecast.js');

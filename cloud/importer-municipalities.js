@@ -4,7 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
-var apiHandler = require('cloud/nve-warnings-api-handler.js');
+var apiHandler = require('cloud/api-handler.js');
 
 function nameFixer(name) {
     name = name.trim();
@@ -79,8 +79,8 @@ function countySummariesJSONToMunicipalities(countySummariesJSON) {
 
 function importMunicipalities() {
 
-    return apiHandler.fetchFloodWarnings().then(function (json) {
-        return countySummariesJSONToMunicipalities(json.CountyList);
+    return apiHandler.fetchWarningsJsonForWarningType('Flood').then(function (json) {
+        return countySummariesJSONToMunicipalities(json);
     }).then(function (newMunicipalities) {
         return createOrUpdateMunicipalities(newMunicipalities);
     }).then(function (counties) {

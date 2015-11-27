@@ -4,7 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
-var apiHandler = require('cloud/nve-warnings-api-handler.js');
+var apiHandler = require('cloud/api-handler.js');
 
 function updateCountyWithJSON(county, countyJSON) {
     county.set('countyId', countyJSON.Id);
@@ -59,8 +59,8 @@ function countySummariesJSONToCounties(countySummariesJSON) {
 
 function importCounties() {
 
-    return apiHandler.fetchFloodWarnings().then(function (json) {
-        return countySummariesJSONToCounties(json.CountyList);
+    return apiHandler.fetchWarningsJsonForWarningType('Flood').then(function (json) {
+        return countySummariesJSONToCounties(json);
     }).then(function (newCounties) {
         return createOrUpdateCounties(newCounties);
     }).then(function (counties) {

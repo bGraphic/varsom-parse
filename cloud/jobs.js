@@ -5,11 +5,11 @@
 
 var _ = require('underscore');
 
-var municipalityImporter = require('cloud/municipality-importer.js');
-var countyImporter = require('cloud/county-importer.js');
-var regionImporter = require('cloud/region-importer.js');
+var municipalityImporter = require('cloud/importer-municipalities.js');
+var countyImporter = require('cloud/importer-counties.js');
+var regionImporter = require('cloud/importer-regions.js');
 
-var warningsImporter = require('cloud/warnings-importer.js');
+var warningsImporter = require('cloud/importer-warnings.js');
 
 function errorMessageFromErrorObject(error) {
     var errorMessage = "";
