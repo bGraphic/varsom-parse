@@ -79,7 +79,7 @@ function importWarnings(warningType, countyLimit) {
       var index2 = countyLimit.breakPoint;
       if (countyLimit.importAboveBreakPoint) {
         index1 = countyLimit.breakPoint;
-        index2 = json.length+1;
+        index2 = json.length + 1;
       }
       json = json.slice(index1, index2);
     }

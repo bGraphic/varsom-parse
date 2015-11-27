@@ -38,29 +38,29 @@ var Area = Parse.Object.extend("Area", {
 });
 
 var Region = Area.extend('AvalancheRegion', {
-  getIdAttribute: function() {
+  getIdAttribute: function () {
     return 'regionId';
   }
 });
 
-var County = Area.extend('County' {
-  getIdAttribute: function() {
+var County = Area.extend('County', {
+  getIdAttribute: function () {
     return 'countyId';
   }
 });
 
-var Municipality = Area.extend('Municipality' {
-  getIdAttribute: function() {
+var Municipality = Area.extend('Municipality', {
+  getIdAttribute: function () {
     return 'municipalityId';
   }
 });
 
 module.exports = {
-  getAreaWithId: function(areaId, warningType) {
+  getAreaWithId: function (areaId, areaType, warningType) {
     if ('region' === areaType) {
       return Region.getAreaWithId(areaId, warningType);
     } else if ('county' === areaType) {
-      return County.getAreaWithId(areaId, areaType, warningType);
+      return County.getAreaWithId(areaId, warningType);
     } else if ('municipality' === areaType) {
       return Municipality.getAreaWithId(areaId, warningType);
     } else {
