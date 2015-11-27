@@ -82,8 +82,8 @@ Parse.Cloud.job("importLandSlideWarnings", function (request, status) {
 Parse.Cloud.job("importWarnings", function (request, status) {
     var promises = [];
     promises.push(warningsImporter.importAvalancheWarnings());
-    promises.push(warningsImporter.importFloodWarnings());
-    promises.push(warningsImporter.importLandSlideWarnings());
+    promises.push(warningsImporter.importFloodWarnings(request.params.countyLimit));
+    promises.push(warningsImporter.importLandSlideWarnings(request.params.countyLimit));
 
     Parse.Promise.when(promises).then(function (success) {
         status.success('Import all warnings succeeded.');

@@ -69,10 +69,20 @@ function loopThroughCounties(json, warningType) {
 }
 
 
-function importWarnings(warningType) {
+function importWarnings(warningType, countyLimit) {
 
   return apiHandler.fetchWarnings(warningType).then(function (json) {
     var promises = [];
+
+    if (countyLimit && countyLimit.breakPoint) {
+      var index1 = 0;
+      var index2 = countyLimit.breakPoint;
+      if (countyLimit.importAboveBreakPoint) {
+        index1 = countyLimit.breakPoint;
+        index2 = json.length+1;
+      }
+      json = json.slice(index1, index2);
+    }
 
     if ('Avalanche' === warningType) {
       promises = loopThroughRegions(json, warningType);
@@ -95,11 +105,11 @@ function importWarnings(warningType) {
 }
 
 module.exports = {
-  importFloodWarnings: function () {
-    return importWarnings('Flood');
+  importFloodWarnings: function (countyLimit) {
+    return importWarnings('Flood', countyLimit);
   },
-  importLandSlideWarnings: function () {
-    return importWarnings('LandSlide');
+  importLandSlideWarnings: function (countyLimit) {
+    return importWarnings('LandSlide', countyLimit);
   },
   importAvalancheWarnings: function () {
     return importWarnings('Avalanche');
