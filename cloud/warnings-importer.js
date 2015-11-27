@@ -1,110 +1,107 @@
-/*jslint node: true, nomen: true, vars: true, laxbreak: true */
+/*jslint node: true, nomen: true, vars: true */
 /*global Parse, unescape */
-
 'use strict';
 
 var _ = require('underscore');
 var apiHandler = require('cloud/nve-warnings-api-handler.js');
-var deserializer = require('cloud/warnings-deserializer.js');
-var processor = require('cloud/warnings-processor.js');
-var AvalancheWarning = require('cloud/model-warning-avalanche.js');
-var AvalancheRegion = require('cloud/model-region.js');
+var Warning = require('cloud/model-warning.js');
+var Area = require('cloud/model-area.js');
+var Forecast = require('cloud/util-forecast.js');
 
-function importFloodWarnings(countyLimit) {
-    return apiHandler.fetchFloodWarnings(countyLimit).then(function (json) {
-        console.log("Flood: json fetched");
-        return deserializer.deserializeFloodWarnings(json, {
-            countyProcessor: processor.processFloodWarningsForCounty,
-            municipalityProcessor: processor.processFloodWarningsForMunicipality
-        }, countyLimit);
-    }).then(function () {
-        console.log('Finished importing flood warnings');
-        return Parse.Promise.as();
-    }, function (error) {
-        console.error("Flood: import failed - " + JSON.stringify(error));
-        if (error.code === 100) {
-            console.log("Flood: try again");
-            return importFloodWarnings();
-        } else {
-            console.log("Flood: do not try again");
-            return Parse.Promise.error(error);
-        }
-    });
+function findAndUpdateAreaWithForecast(areaId, forecast, areaType, warningType) {
+  return Area.getAreaWithId(areaId, areaType, warningType).done(function (area) {
+    if (area) {
+      area.setAttributesNeededByPush(forecast, warningType);
+      area.updateForecast(forecast, warningType);
+      return area.save();
+    } else {
+      console.error(warningType + ": no " + areaType + " with id=" + areaId + " in Parse");
+      return Parse.Promise.as();
+    }
+  });
 }
 
-function importLandSlideWarnings(countyLimit) {
-    return apiHandler.fetchLandSlideWarnings().then(function (json) {
-        console.log("Landslide: json fetched");
-        return deserializer.deserializeLandSlideWarnings(json, {
-            countyProcessor: processor.processLandSlideWarningsForCounty,
-            municipalityProcessor: processor.processLandSlideWarningsForMunicipality
-        }, countyLimit);
-    }).then(function () {
-        console.log('Finished importing landslide warnings');
-        return Parse.Promise.as();
-    }, function (error) {
-        console.error("Landslide: import failed - " + JSON.stringify(error));
-        if (error.code === 100) {
-            console.log("Landslide: try again");
-            return importLandSlideWarnings();
-        } else {
-            console.log("Landslide: do not try again");
-            return Parse.Promise.error(error);
-        }
+function loopThroughRegions(json, warningType) {
+  var promises = [];
+
+  _.each(json, function (regionJson) {
+    var regionId = regionJson.Id;
+
+    var regionForecast = _.map(regionJson.AvalancheWarningList, function (warningJson) {
+      var warning = Warning.newWarning(warningType);
+      warning.set('regionId', regionId);
+      warning.updateAttributesFromWarningJson(warningJson);
+      return warning;
     });
+
+    promises.push(findAndUpdateAreaWithForecast(regionId, regionForecast, 'region', warningType));
+  });
+
+  return promises;
 }
 
-function importAvalancheWarnings() {
-    return apiHandler.fetchAvalancheWarnings().then(function (json) {
-      var promises = [];
+function loopThroughCounties(json, warningType) {
+  var promises = [];
 
-      _.each(json, function (regionJson) {
-        var regionId = regionJson.Id;
+  _.each(json, function (countyJson) {
+    var countyId = countyJson.Id;
+    var countyForecast = [];
 
-        var regionForecast = _.map(regionJson.AvalancheWarningList, function (warningJSON) {
-          var warning = new AvalancheWarning();
-          warning.set('regionId', regionId);
-          warning.updateAttributesFromWarningJson(warningJSON);
-          return warning;
-        });
-
-        promises.push(AvalancheRegion.queryForRegionWithId(regionId).done(function (region) {
-          if (region) {
-            region.setAttributesNeededByPush(regionForecast, 'AvalancheWarning');
-            region.udpdateForecast(regionForecast, 'AvalancheWarning');
-            return region.save();
-          } else {
-            console.error("Avalanche: no region with id=" + regionId);
-            return Parse.Promise.as();
-          }
-        }));
+    _.each(countyJson.MunicipalityList, function (municipalityJson) {
+      var municipalityId = municipalityJson.Id;
+      var municipalityForecast = _.map(municipalityJson.WarningList, function (warningJson) {
+        var warning = Warning.newWarning(warningType);
+        warning.set('countyId', countyId);
+        warning.set('municipalityId', municipalityId);
+        warning.updateAttributesFromWarningJson(warningJson);
+        return warning;
       });
 
-      return Parse.Promise.when(promises);
+      countyForecast = Forecast.updateForecastIfNewForecastHasHigherLevel(countyForecast, municipalityForecast);
+      promises.push(findAndUpdateAreaWithForecast(municipalityId, municipalityForecast, 'municipality', warningType));
 
-    }).fail(function (error) {
-        console.error("Avalanche: import failed - " + JSON.stringify(error));
-        if (error.code === 100) {
-            console.log("Avalanche: try again");
-            return importAvalancheWarnings();
-        } else {
-            console.log("Avalanche: do not try again");
-            return Parse.Promise.error(error);
-        }
     });
+
+    promises.push(findAndUpdateAreaWithForecast(countyId, countyForecast, 'county', warningType));
+  });
+
+  return promises;
 }
 
-function importAllWarnings() {
-    return Parse.Promise.when([
-        importAvalancheWarnings(),
-        importFloodWarnings(),
-        importLandSlideWarnings()
-    ]);
+
+function importWarnings(warningType) {
+
+  return apiHandler.fetchWarnings(warningType).then(function (json) {
+    var promises = [];
+
+    if ('Avalanche' === warningType) {
+      promises = loopThroughRegions(json, warningType);
+    } else {
+      promises = loopThroughCounties(json, warningType);
+    }
+
+    return Parse.Promise.when(promises);
+
+  }).fail(function (error) {
+    console.error(warningType + ": import failed - " + JSON.stringify(error));
+    if (error.code === 100) {
+      console.log(warningType + ":  try again");
+      return importWarnings(warningType);
+    } else {
+      console.log(warningType + ": do not try again");
+      return Parse.Promise.error(error);
+    }
+  });
 }
 
 module.exports = {
-    importFloodWarnings: importFloodWarnings,
-    importLandSlideWarnings: importLandSlideWarnings,
-    importAvalancheWarnings: importAvalancheWarnings,
-    importAllWarning: importAllWarnings
+  importFloodWarnings: function () {
+    return importWarnings('Flood');
+  },
+  importLandSlideWarnings: function () {
+    return importWarnings('LandSlide');
+  },
+  importAvalancheWarnings: function () {
+    return importWarnings('Avalanche');
+  }
 };

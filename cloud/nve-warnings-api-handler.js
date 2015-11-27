@@ -3,10 +3,6 @@
 
 'use strict';
 
-var WARNING_TYPE_AVALANCHE = "avalanche";
-var WARNING_TYPE_FLOOD = "flood";
-var WARNING_TYPE_LANDSLIDE = "landslide";
-
 function apiUrl(warningType) {
   return Parse.Config.get().then(function (config) {
     var apiUrl = config.get(warningType + "ApiUrl");
@@ -35,18 +31,18 @@ function fetchDataFromUrl(url) {
 
 function fetchWarningsJsonForWarningType(warningType) {
   return apiUrl(warningType).then(function (url) {
-    return fetchDataFromUrl(url);
+    return fetchDataFromUrl(url).done(function (data) {
+      if('Avalanche' == warningType) {
+        return Parse.Promise.as(data);
+      } else {
+        return Parse.Promise.as(data.CountyList)
+      }
+    });
   });
 }
 
 module.exports = {
-  fetchAvalancheWarnings: function () {
-    return fetchWarningsJsonForWarningType(WARNING_TYPE_AVALANCHE);
-  },
-  fetchFloodWarnings: function () {
-    return fetchWarningsJsonForWarningType(WARNING_TYPE_FLOOD);
-  },
-  fetchLandSlideWarnings: function () {
-    return fetchWarningsJsonForWarningType(WARNING_TYPE_LANDSLIDE);
+  fetchWarnings: function (warningType) {
+    return fetchWarningsJsonForWarningType(warningType);
   }
 };

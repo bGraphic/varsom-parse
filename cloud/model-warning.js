@@ -103,7 +103,23 @@ var Warning = Parse.Object.extend('Warning', {
   }
 }, {
   // class methods
-
 });
 
-module.exports = Warning;
+var AvalancheWarning = Warning.extend("AvalancheWarning");
+var FloodWarning = Warning.extend("FloodWarning");
+var LandSlideWarning = Warning.extend("LandSlideWarning");
+
+module.exports = {
+  newWarning: function (warningType) {
+    if ('Avalanche' === warningType) {
+      return new AvalancheWarning();
+    } else if ('Flood' === warningType) {
+      return new FloodWarning();
+    } else if ('LandSlide' === warningType) {
+      return new LandSlideWarning();
+    } else {
+      console.error("Incorrect warningType: " + warningType);
+      return undefined;
+    }
+  }
+};
