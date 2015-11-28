@@ -16,7 +16,7 @@ function urlBase(type) {
 
     return Parse.Config.get().then(function(config) {
         if (config.get('apiEnv') === 'test') {
-            base = 'http://h-web02.nve.no/' + type + '_test/api';
+            base = 'http://h-web03.nve.no/' + type + '_test/api';
         } else if (config.get('apiEnv') === 'debug') {
             base = 'http://varsom-debug-data.parseapp.com/' + type;
         }
