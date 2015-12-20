@@ -4,7 +4,7 @@
 'use strict';
 
 var _ = require('underscore');
-var apiHandler = require('cloud/nve-warnings-api-handler.js');
+var apiHandler = require('cloud/api-handler.js');
 
 function isRegionJSONCountyRegionJSON(regionJSON) {
   return regionJSON.Id > 50;
