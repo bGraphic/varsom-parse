@@ -19,17 +19,23 @@ function deserializeAvalancheProblems(avalancheProblemsJSON) {
         return {
             problemId: problemJSON.AvalancheProblemId,          // Sort order for avalanche problems
             extId: problemJSON.AvalancheExtId,
+            extName: problemJSON.AvalancheExtName,
             causeId: problemJSON.AvalCauseId,
+            causeName: problemJSON.AvalCauseName,
             probabilityId: problemJSON.AvalProbabilityId,
+            probabilityName: problemJSON.AvalProbabilityName,
             triggerSimpleId: problemJSON.AvalTriggerSimpleId,
+            triggerSimpleName: problemJSON.AvalTriggerSimpleName,
             destructiveSizeExtId: problemJSON.DestructiveSizeExtId,
+            destructiveSizeExtName: problemJSON.DestructiveSizeExtName,
             propagationId: problemJSON.AvalPropagationId,
+            propagationName: problemJSON.AvalPropagationName,
             advice: problemJSON.AvalancheAdvice,
             typeId: problemJSON.AvalancheTypeId,
             problemTypeId: problemJSON.AvalancheProblemTypeId,
+            problemTypeName: problemJSON.AvalancheProblemTypeName,
 
             validExpositions: problemJSON.ValidExpositions,
-
             exposedHeight1: problemJSON.ExposedHeight1,
             exposedHeight2: problemJSON.ExposedHeight2,
             exposedHeightFill: problemJSON.ExposedHeightFill
