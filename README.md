@@ -19,24 +19,28 @@ The api urls to import from is managed by Parse.Config.
 
 Responsible for importing data displayed by the client apps. 
 
-The api being used is controlled by the env parameter: `apiEnv`, type: `String`, value: `prod`, `test` or `debug`.
-* `prod` will fetch data from NVE's production api: [api.nve.no](http://api.nve.no)
-* `test` will fetch data from NVE's test api
-* `debug` will fetch data from `http://varsom-debug-data.parseapp.com`*
-    
-NVE has three parse apps in their account:
-* **varsom (prod)**
-  * `apiEnv` always set to prod.
-  * used by the app in production.
-  * Current varsom-parse master branch.
-* **varsom-beta**
-  * `apiEnv` can be set to `prod`, `test` or `debug`.
-  * Used fortesting with NVE staff and beta test crew.
-  * Current varsom-parse release branch.
-* **varsom-test**
-  * `apiEnv` can be set to `prod`, `test` or `debug`
-  * Used for testing within team.
-  * Current varsom-parse develop branch.
+The api being used is controlled by the api urls given in the Parse app config section.
+There is one parameter for each warning type.
+
+* Parameter: `AvalancheApiUrl`, type: `String` 
+* Parameter: `FloodApiUrl`, type: `String`
+* Parameter: `LandSlideApiUrl`, type: `String`
+
+**Debug**
+* AvalancheApiUrl: `http://varsom-debug-data.parseapp.com/avalanche/RegionSummary/Detail/1`
+* FloodApiUrl: `http://varsom-debug-data.parseapp.com/flood/CountySummary/1`
+* LandSlideApiUrl: `http://varsom-debug-data.parseapp.com/landslide/CountySummary/1`
+
+**Test**
+* AvalancheApiUrl: `http://h-web03.nve.no/Avalanche_Test/api/RegionSummary/Detail/1`
+* FloodApiUrl: `http://h-web03.nve.no/flood_test/api/CountySummary/1`
+* LandSlideApiUrl: `http://h-web03.nve.no/landslide_test/api/CountySummary/1`
+
+**Prod**
+* AvalancheApiUrl: `http://api01.nve.no/hydrology/forecast/avalanche/v2.0.2/api/RegionSummary/Detail/1`
+* FloodApiUrl: ` http://api01.nve.no/hydrology/forecast/flood/v1.0.3/api/CountySummary/1`
+* LandSlideApiUrl: `http://api01.nve.no/hydrology/forecast/landslide/v1.0.3/api/CountySummary/1`
+
 
 # Getting started
 
@@ -99,10 +103,8 @@ touch global.json
 ### Import initial data
 1. Configure the apiEnv Parse config parameter
   * Go to Core -> Config in you Parse app
-  * Add a parameter with name: `apiEnv`, type: `String`, value: `prod`, `test` or `debug`.
-    * `prod` will fetch data from NVE's production api
-    * `test` will fetch data from NVE's test api
-    * `debug` will fetch data from `http://varsom-debug-data.parseapp.com`*
+  * Add the parameters: `AvalancheApiUrl`, `FloodApiUrl` and `LandSlideApiUrl`. 
+    * See above for possible values.
 2. Import areas: counties, municipalities and avalanche regions by running these jobs: 
   * `importCounties`
   * `importMunicipalities`
