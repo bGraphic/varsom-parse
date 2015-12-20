@@ -31,25 +31,25 @@ var Area = Parse.Object.extend("Area", {
   // Class methods
   getAreaWithId: function (areaId, warningType) {
     var query = new Parse.Query(this);
-    query.equalTo(this.getIdAttribute());
+    query.equalTo(this.getIdAttribute(), areaId);
     query.include(warningType + 'WarningForecast');
     return query.first();
   }
 });
 
-var Region = Area.extend('AvalancheRegion', {
+var Region = Area.extend('AvalancheRegion', {}, {
   getIdAttribute: function () {
     return 'regionId';
   }
 });
 
-var County = Area.extend('County', {
+var County = Area.extend('County', {}, {
   getIdAttribute: function () {
     return 'countyId';
   }
 });
 
-var Municipality = Area.extend('Municipality', {
+var Municipality = Area.extend('Municipality', {}, {
   getIdAttribute: function () {
     return 'municipalityId';
   }
