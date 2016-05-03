@@ -29,7 +29,7 @@ var Warning = Parse.Object.extend('Warning', {
   // instance methods
   updateAttributesFromWarningJson: function (warningJson) {
     this.set('validFrom', deserializer.parseAsDate(warningJson.ValidFrom));
-    this.set('validTo', deserializer.parseAsDate(warningJson.ValidTo));
+    this.set('validTo', deserializer.parseAsDate(warningJson.ValidFrom));
 
     this.set('publishTime', deserializer.parseAsDate(warningJson.PublishTime));
     this.set('nextWarningTime', deserializer.parseAsDate(warningJson.NextWarningTime));
