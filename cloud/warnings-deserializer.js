@@ -61,7 +61,7 @@ function deserializeWarning(warningJSON, warningType) {
     var timezone = "Europe/Oslo";
 
     warning.set('validFrom', moment.tz(warningJSON.ValidFrom, timezone).toDate());
-    warning.set('validTo', moment.tz(warningJSON.ValidTo, timezone).toDate());
+    warning.set('validTo', moment.tz(warningJSON.ValidFrom, timezone).toDate());
 
     warning.set('publishTime', moment.tz(warningJSON.PublishTime, timezone).toDate());
     warning.set('nextWarningTime', moment.tz(warningJSON.NextWarningTime, timezone).toDate());
