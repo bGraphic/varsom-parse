@@ -209,8 +209,16 @@ function processWarningsForMunicipality(municipalityWarnings, warningType) {
         var municpalitySaveList = [];
 
         _.each(municipalities, function (municipality) {
-            var updatedMunicipality = processWarningsForArea(municipality, municipalityWarnings.warnings[municipality.get("municipalityId")], warningType);
-            municpalitySaveList.push(updatedMunicipality);
+
+            try {
+                var updatedMunicipality = processWarningsForArea(municipality, municipalityWarnings.warnings[municipality.get("municipalityId")], warningType);
+                municpalitySaveList.push(updatedMunicipality);
+            }
+            catch(err) {
+                console.error("Error processing warnings for area: " + municipality.get("municipalityId"));
+                console.error("Error: " + JSON.stringify(err));
+            }
+
         });
 
         return saveAll(municpalitySaveList);
