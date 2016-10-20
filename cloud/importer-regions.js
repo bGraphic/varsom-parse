@@ -104,7 +104,7 @@ function regionOverviewsJSONToRegions(regionOverviewsJSON) {
 
 function importRegions() {
 
-  return apiHandler.fetchWarningsJsonForWarningType('Avalanche').then(function (json) {
+  return apiHandler.fetchWarnings('Avalanche').then(function (json) {
     return regionOverviewsJSONToRegions(json);
   }).then(function (newRegions) {
     return Parse.Promise.when(createOrUpdateRegions(newRegions), deleteRegions(newRegions));

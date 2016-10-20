@@ -59,7 +59,7 @@ function countySummariesJSONToCounties(countySummariesJSON) {
 
 function importCounties() {
 
-  return apiHandler.fetchWarningsJsonForWarningType('Flood').then(function (json) {
+  return apiHandler.fetchWarnings('Flood').then(function (json) {
     return countySummariesJSONToCounties(json);
   }).then(function (newCounties) {
     return createOrUpdateCounties(newCounties);
