@@ -7,7 +7,7 @@ var _ = require('underscore');
 var apiHandler = require('cloud/api-handler.js');
 
 function isRegionJSONCountyRegionJSON(regionJSON) {
-  return regionJSON.Id > 50;
+  return regionJSON.Id > 50 && regionJSON.Id < 3000;
 }
 
 function isRegionJSONNordfjordJSON(regionJSON) {
