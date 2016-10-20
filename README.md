@@ -14,8 +14,10 @@ The api urls to import from is managed by Parse.Config.
 * _avalancheApiUrl_: http://h-web03.nve.no/Avalanche_Test/api/RegionSummary/Detail/1
 * _floodApiUrl_: http://h-web03.nve.no/flood_test/api/CountySummary/1
 * _landslideApiUrl_: http://h-web03.nve.no/landslide_test/api/CountySummary/1
-=======
+
+
 [The varsom apps](http://github.com/varsom-apps)'s backend.
+=======
 
 Responsible for importing data displayed by the client apps. 
 
