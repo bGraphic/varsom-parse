@@ -25,9 +25,9 @@ function mergeForecastWithNewForecast(forecast, newForecast) {
 function highestForecastLevel(forecast) {
   var highestLevel = -1;
   _.each(forecast, function (warning) {
-    if (warning.has('activityLevel') && warning.get('activityLevel') > highestForecastLevel) {
+    if (warning.has('activityLevel') && warning.get('activityLevel') > highestLevel) {
       highestLevel = warning.get('activityLevel');
-    } else if (warning.has('dangerLevel') && warning.get('dangerLevel') > highestForecastLevel) {
+    } else if (warning.has('dangerLevel') && warning.get('dangerLevel') > highestLevel) {
       highestLevel = warning.get('dangerLevel');
     }
   });
