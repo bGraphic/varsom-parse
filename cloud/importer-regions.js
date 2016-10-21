@@ -18,6 +18,7 @@ function updateRegionWithJSON(region, regionJSON) {
   region.set('regionId', regionJSON.Id);
   region.set('name', regionJSON.Name);
   region.set('sortOrder', regionJSON.Id);
+  region.set('regionTypeId', regionJSON.TypeId);
 
   return region;
 }
@@ -25,6 +26,7 @@ function updateRegionWithJSON(region, regionJSON) {
 function updateRegion(region, newRegion) {
   region.set('name', newRegion.get('name'));
   region.set('sortOrder', newRegion.get('sortOrder'));
+  region.set('regionTypeId', newRegion.get('regionTypeId'));
   return region;
 }
 
