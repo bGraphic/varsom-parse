@@ -6,8 +6,8 @@
 var pushNotifier = require('cloud/push-notifier.js');
 
 Parse.Cloud.beforeSave('County', function (request, response) {
-  pushNotifier.pushHighestForecastLevelUpdate(request.object, 'LandSlideWarning').then(function () {
-    return pushNotifier.pushHighestForecastLevelUpdate(request.object, 'FloodWarning');
+  pushNotifier.pushHighestForecastLevelUpdate(request.object, 'LandSlide').then(function () {
+    return pushNotifier.pushHighestForecastLevelUpdate(request.object, 'Flood');
   }).then(function () {
     return response.success();
   }, function (error) {
@@ -16,12 +16,12 @@ Parse.Cloud.beforeSave('County', function (request, response) {
 });
 
 Parse.Cloud.beforeSave('Municipality', function (request, response) {
-  pushNotifier.pushHighestForecastLevelUpdate(request.object, 'LandSlideWarning').then(function () {
-    return pushNotifier.pushHighestForecastLevelUpdate(request.object, 'FloodWarning');
+  pushNotifier.pushHighestForecastLevelUpdate(request.object, 'LandSlide').then(function () {
+    return pushNotifier.pushHighestForecastLevelUpdate(request.object, 'Flood');
   }).then(function () {
-    return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'LandSlideWarning');
+    return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'LandSlide');
   }).then(function () {
-    return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'FloodWarning');
+    return pushNotifier.pushMicroBlogPostsUpdate(request.object, 'Flood');
   }).then(function () {
     return response.success();
   }, function (error) {
