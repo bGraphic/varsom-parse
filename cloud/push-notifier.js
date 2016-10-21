@@ -70,16 +70,17 @@ function pushHighestForecastLevelUpdate(area, warningType) {
             newLevel
           ]
         },
-        warningType: "" + warningType,
-        areaType: "" + area.className,
-        areaId: "" + areaIDForArea(area),
-        parentId: "" + parentIDForArea(area)
+        warningType: String(warningType),
+        areaType: String(area.className),
+        areaId: String(areaIDForArea(area)),
+        parentId: String(parentIDForArea(area))
       }
     }).always(function (result) {
       setCurrentToNewForecastLevel(area, warningType, newLevel);
 
       if ((result instanceof Parse.Error)) {
         console.error("Error pushing warning level change: " + JSON.stringify(result));
+        console.error("Area: " + area.get("name") + ": Level changed from " + currentLevel + " to " + newLevel);
       }
 
       return Parse.Promise.as();
@@ -104,15 +105,16 @@ function pushHighestPriorityAvalancheProblemHasChangedUpdate(area) {
           ]
         },
         warningType: "AvalancheWarning",
-        areaType: "" + area.className,
-        areaId: "" + areaIDForArea(area),
-        parentId: "" + parentIDForArea(area)
+        areaType: String(area.className),
+        areaId: String(areaIDForArea(area)),
+        parentId: String(parentIDForArea(area))
       }
     }).always(function (result) {
       area.set("highestPriorityAvalancheProblemHasChanged", false);
 
       if ((result instanceof Parse.Error)) {
-        console.error("Error pushing problem : " + JSON.stringify(result));
+        console.error("Error pushing avalanche problem has changed: " + JSON.stringify(result));
+        console.error("Area: " + area.get("name") + ": Avalanche problem has changed ");
       }
 
       return Parse.Promise.as();
@@ -137,15 +139,16 @@ function pushMicroBlogPostsUpdate(area, warningType) {
           ]
         },
         warningType: warningType,
-        areaType: "" + area.className,
-        areaId: "" + areaIDForArea(area),
-        parentId: "" + parentIDForArea(area)
+        areaType: String(area.className),
+        areaId: String(areaIDForArea(area)),
+        parentId: String(parentIDForArea(area))
       }
     }).always(function (result) {
       area.set(warningType + "MicroBlogPostsHaveChanged", false);
 
       if ((result instanceof Parse.Error)) {
         console.error("Error pushing micro blog post change: " + JSON.stringify(result));
+        console.error("Area: " + area.get("name") + ": Micro blogpost has changed ");
       }
 
       return Parse.Promise.as();
