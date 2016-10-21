@@ -30,7 +30,7 @@ Parse.Cloud.beforeSave('Municipality', function (request, response) {
 });
 
 Parse.Cloud.beforeSave('AvalancheRegion', function (request, response) {
-  pushNotifier.pushHighestForecastLevelUpdate(request.object, 'AvalancheWarning')
+  pushNotifier.pushHighestForecastLevelUpdate(request.object, 'Avalanche')
     .always(function () {
       return pushNotifier.pushHighestPriorityAvalancheProblemHasChangedUpdate(request.object);
     })
