@@ -17,12 +17,14 @@ function isRegionJSONNordfjordJSON(regionJSON) {
 function updateRegionWithJSON(region, regionJSON) {
   region.set('regionId', regionJSON.Id);
   region.set('name', regionJSON.Name);
+  region.set('sortOrder', regionJSON.Id);
 
   return region;
 }
 
 function updateRegion(region, newRegion) {
   region.set('name', newRegion.get('name'));
+  region.set('sortOrder', newRegion.get('sortOrder'));
   return region;
 }
 
