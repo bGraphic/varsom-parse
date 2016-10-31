@@ -293,12 +293,12 @@ function migrateInstallations(skip) {
 
       _.each(channels, function(channel) {
         if(channel.includes("AvalancheRegion-")) {
-          channel = channel.replace("AvalancheRegion-", "");
-          if(channel < 3000) {
-            console.log("Mapping: original region", channel);
+          var originalRegionId = channel.replace("AvalancheRegion-", "");
+          if(originalRegionId < 3000) {
+            console.log("Mapping: original region", originalRegionId);
 
             var regionMapIndex = _.findIndex(regionMapping, function(regionMap) {
-              return regionMap.regionId == channel;
+              return regionMap.regionId == originalRegionId;
             });
 
             if(regionMapIndex > -1) {
@@ -307,7 +307,7 @@ function migrateInstallations(skip) {
                 console.log("Mapping: new region", newRegion.id, newRegion.name);
               });
             } else {
-              console.log("Mapping: No new regions for", channel);
+              console.log("Mapping: No new regions for", originalRegionId);
             }
           }
         }
