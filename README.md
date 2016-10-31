@@ -10,10 +10,15 @@ Parse backend for varsom-ios and varsom-hybrid.
 == Import ==
 The api urls to import from is managed by Parse.Config.
 
+=== Prod api import configurations ===
+* _avalancheApiUrl_: http://api01.nve.no/hydrology/forecast/avalanche/v2.0.2/api/RegionSummary/Detail/1
+* _floodApiUrl_: http://api01.nve.no/hydrology/forecast/flood/v1.0.3/api/CountySummary/1
+* _landslideApiUrl_: http://api01.nve.no/hydrology/forecast/landslide/v1.0.3/api/CountySummary/1
+
 === Test api import configurations ===
-* _avalancheApiUrl_: http://h-web03.nve.no/Avalanche_Test/api/RegionSummary/Detail/1
-* _floodApiUrl_: http://h-web03.nve.no/flood_test/api/CountySummary/1
-* _landslideApiUrl_: http://h-web03.nve.no/landslide_test/api/CountySummary/1
+* _avalancheApiUrl_: http://api01.nve.no/hydrology/forecast/avalanche/test/api/RegionSummary/Detail/1
+* _floodApiUrl_: http://api01.nve.no/hydrology/forecast/flood/test/api/CountySummary/1
+* _landslideApiUrl_: http://api01.nve.no/hydrology/forecast/landslide/test/api/CountySummary/1
 
 
 [The varsom apps](http://github.com/varsom-apps)'s backend.
