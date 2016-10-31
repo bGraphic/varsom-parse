@@ -146,3 +146,15 @@ Deployment is done by using parse deploy.
 
 **Dev:**   
 `parse deploy varsom-dev`
+
+## Housekeeping
+Scripts created to do data manipulation.  
+Run by using `node <script-file-name> varsom-<prod/beta/debug>`.
+
+These scripts depend on the global.json key file in the config folder.
+
+**Season 2016/2017**
+Script `migrate-fav-regions.js` was created to migrate users subscription to avalanche region from old ids to new ids.  
+Run by using `node migrate-fav-regions.js varsom-<prod/beta/debug>`.
+
+
