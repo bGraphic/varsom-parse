@@ -16,8 +16,8 @@ There is one parameter for each warning type.
 * LandSlideApiUrl: `http://varsom-debug-data.parseapp.com/landslide/CountySummary/1`
 
 **Test**
-* AvalancheApiUrl: `http://api01.nve.no/hydrology/forecast/avalanche/test/api/api/RegionSummary/Detail/1`
-* FloodApiUrl: `http://api01.nve.no/hydrology/forecast/flood/test/CountySummary/1`
+* AvalancheApiUrl: `http://api01.nve.no/hydrology/forecast/avalanche/test/api/RegionSummary/Detail/1`
+* FloodApiUrl: `http://api01.nve.no/hydrology/forecast/flood/test/api/CountySummary/1`
 * LandSlideApiUrl: `http://api01.nve.no/hydrology/forecast/landslide/test/api/CountySummary/1`
 
 **Prod**
