@@ -1,26 +1,3 @@
-Varsom | Parse
-============
-
-Parse backend for varsom-ios and varsom-hybrid. 
-* Imports warnings from the api.nve.no
-* Manages push notofocations
-
-= Config = 
-
-== Import ==
-The api urls to import from is managed by Parse.Config.
-
-=== Prod api import configurations ===
-* _avalancheApiUrl_: http://api01.nve.no/hydrology/forecast/avalanche/v2.0.2/api/RegionSummary/Detail/1
-* _floodApiUrl_: http://api01.nve.no/hydrology/forecast/flood/v1.0.3/api/CountySummary/1
-* _landslideApiUrl_: http://api01.nve.no/hydrology/forecast/landslide/v1.0.3/api/CountySummary/1
-
-=== Test api import configurations ===
-* _avalancheApiUrl_: http://api01.nve.no/hydrology/forecast/avalanche/test/api/RegionSummary/Detail/1
-* _floodApiUrl_: http://api01.nve.no/hydrology/forecast/flood/test/api/CountySummary/1
-* _landslideApiUrl_: http://api01.nve.no/hydrology/forecast/landslide/test/api/CountySummary/1
-
-
 [The varsom apps](http://github.com/varsom-apps)'s backend.
 =======
 
