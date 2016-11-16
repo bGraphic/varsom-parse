@@ -63,14 +63,14 @@ function pushHighestForecastLevelUpdate(area, warningType) {
       where: pushQueryForAreaClassnameAndId(area.className, areaIDForArea(area)),
       data: {
         alert: {
-          "loc-key": warningType + " forecast changed",
+          "loc-key": warningType + "Warning forecast changed",
           "loc-args": [
             area.get("name"),
             currentLevel,
             newLevel
           ]
         },
-        warningType: String(warningType),
+        warningType: String(warningType)+"Warning",
         areaType: String(area.className),
         areaId: String(areaIDForArea(area)),
         parentId: String(parentIDForArea(area))
@@ -133,12 +133,12 @@ function pushMicroBlogPostsUpdate(area, warningType) {
       where: pushQueryForAreaClassnameAndId(area.className, areaIDForArea(area)),
       data: {
         alert: {
-          "loc-key": warningType + " MicroBlogPosts have changed",
+          "loc-key": warningType + "Warning MicroBlogPosts have changed",
           "loc-args": [
             area.get("name")
           ]
         },
-        warningType: warningType,
+        warningType: warningType+"Warning",
         areaType: String(area.className),
         areaId: String(areaIDForArea(area)),
         parentId: String(parentIDForArea(area))
