@@ -1,0 +1,13 @@
+{
+  "name": "housekeeping",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "node-rest-client": "^2.0.1",
+    "parse": "^1.9.2",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}
