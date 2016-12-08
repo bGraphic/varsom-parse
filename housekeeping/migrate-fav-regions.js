@@ -283,12 +283,14 @@ function migrateInstallations(skip) {
   var avalancheInstallationQuery = new Parse.Query(Parse.Installation);
   avalancheInstallationQuery.skip(skip);
   avalancheInstallationQuery.limit(1000);
+  avalancheInstallationQuery.ascending('deviceToken');
   return avalancheInstallationQuery.find().then(function (installations) {
 
     var promise = Parse.Promise.as();
 
     _.each(installations, function(installation) {
       var channels = installation.get("channels");
+      var changed = false;
       console.log("Installation: ", installation.id);
 
       _.each(channels, function(channel) {
@@ -296,6 +298,7 @@ function migrateInstallations(skip) {
           var originalRegionId = channel.replace("AvalancheRegion-", "");
           if(originalRegionId < 3000) {
             console.log("Mapping: original region", originalRegionId);
+            changed = true;
 
             var regionMapIndex = _.findIndex(regionMapping, function(regionMap) {
               return regionMap.regionId == originalRegionId;
@@ -313,15 +316,17 @@ function migrateInstallations(skip) {
         }
       });
 
-      promise = promise.then(function() {
-        installation.save().then(function(installation) {
-          console.log("Installation: Saved", installation.id);
-          return Parse.as();
-        }, function(error) {
-          console.log("Mapping: Saving failed", installation.id, error);
-          return Parse.as();
+      if(changed) {
+        promise = promise.then(function() {
+          installation.save().then(function(installation) {
+            console.log("Installation: Saved", installation.id);
+            return Parse.as();
+          }, function(error) {
+            console.log("Mapping: Saving failed", installation.id, error);
+            return Parse.as();
+          });
         });
-      });
+      }
 
     });
 
@@ -334,10 +339,10 @@ function migrateInstallations(skip) {
   });
 }
 
-migrateInstallations(0).then(function() {
-  console.log("Migration of all installations done.");
-});
+var promise = Parse.Promise.as();
 
-migrateInstallations(1000).then(function() {
-  console.log("Migration of all installations done.");
+var skip = 7000;
+
+migrateInstallations(skip).then(function() {
+  console.log("Migration of installations done. " + skip);
 });
