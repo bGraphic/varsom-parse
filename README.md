@@ -21,7 +21,7 @@ There is one parameter for each warning type.
 * LandSlideApiUrl: `http://api01.nve.no/hydrology/forecast/landslide/test/api/CountySummary/1`
 
 **Prod**
-* AvalancheApiUrl: `http://api01.nve.no/hydrology/forecast/avalanche/v2.0.2/api/RegionSummary/Detail/1`
+* AvalancheApiUrl: `http://api01.nve.no/hydrology/forecast/avalanche/v3.0.0/api/RegionSummary/Detail/1`
 * FloodApiUrl: ` http://api01.nve.no/hydrology/forecast/flood/v1.0.3/api/CountySummary/1`
 * LandSlideApiUrl: `http://api01.nve.no/hydrology/forecast/landslide/v1.0.3/api/CountySummary/1`
 
