@@ -66,8 +66,8 @@ function pushHighestForecastLevelUpdate(area, warningType) {
           "loc-key": warningType + "Warning forecast changed",
           "loc-args": [
             area.get("name"),
-            currentLevel,
-            newLevel
+            String(currentLevel),
+            String(newLevel)
           ]
         },
         warningType: String(warningType)+"Warning",
